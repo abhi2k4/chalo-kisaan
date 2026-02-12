@@ -476,7 +476,6 @@ We welcome contributions from developers, designers, and domain experts. Please 
 ### Getting Help
 - **Issues**: Report bugs and request features on GitHub Issues
 - **Discussions**: Join community discussions on GitHub Discussions
-- **Email**: Contact the team at support@chalokisaan.com
 
 ---
 
