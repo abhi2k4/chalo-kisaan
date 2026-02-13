@@ -520,11 +520,24 @@ This project is built with support from:
 
 ---
 
+## Team
+
+Meet the team behind Chalo Kisaan:
+
+| Name | Role | LinkedIn |
+|------|------|----------|
+| Jishanahmed AR Shaikh | Lead Developer | [LinkedIn](https://www.linkedin.com/in/jishanahmedshaikh) |
+| Om S Bhojane | Full Stack Developer | [LinkedIn](https://www.linkedin.com/in/om-bhojane/) |
+| Abhishek Thormothe | Backend Developer | [LinkedIn](https://www.linkedin.com/in/thormotheabhishek/) |
+| Raksha Poojari | Frontend Developer | [LinkedIn](https://www.linkedin.com/in/rakshapoojari/) |
+
+---
+
 ## Contact & Social
 
 - **Website**: https://www.jishanahmed.in
 - **Email**: shaikhjishan255@gmail.com
-- **LinkedIn**: [Jishanahmed AR Shaikh](https://linkedin.comin/jishanahmedshaikh)
+- **LinkedIn**: [Jishanahmed AR Shaikh](https://www.linkedin.com/in/jishanahmedshaikh)
 - **GitHub**: [chalo-kisaan](https://github.com/jishanahmed-shaikh/chalo-kisaan)
 
 ---
