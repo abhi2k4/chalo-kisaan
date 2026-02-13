@@ -25,6 +25,8 @@
 
 The platform addresses a critical market need: while millions of Indian farmers possess valuable agricultural land, many lack the business acumen, technical skills, and visualization capabilities to convert their farms into successful tourism destinations. Chalo Kisaan democratizes agritourism by making business planning accessible through voice interaction in local languages (Hindi, Marathi, English).
 
+**Built for Hackathon**: This project is designed for rapid development and MVP delivery, focusing on core features that deliver immediate value to farmers.
+
 ---
 
 ## Key Features
