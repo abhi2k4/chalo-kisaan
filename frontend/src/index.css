@@ -1,0 +1,402 @@
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Paper & Ink Palette — Indian printed matter */
+  --paper:        #fdf6e3;
+  --paper-dark:   #f5ead0;
+  --paper-fold:   #ecdfc0;
+  --ink:          #1c1208;
+  --ink-light:    #3d2f1a;
+  --ink-muted:    #6b5a3e;
+  --ink-faint:    #a8936a;
+
+  /* Accent — saffron, terracotta, forest */
+  --saffron:      #e07b00;
+  --saffron-light:#f5a623;
+  --terracotta:   #b04a2a;
+  --forest:       #2e5c2e;
+  --forest-light: #4a8c3f;
+  --gold-rule:    #c8a84b;
+
+  /* Functional */
+  --border:       #d4bc8a;
+  --border-dark:  #b09060;
+  --shadow:       rgba(60, 40, 10, 0.12);
+  --shadow-deep:  rgba(60, 40, 10, 0.22);
+
+  /* Fonts */
+  --font-serif:      'Literata', Georgia, serif;
+  --font-display:    'Tiro Devanagari Hindi', 'Literata', serif;
+  --font-devanagari: 'Noto Sans Devanagari', serif;
+  --font-body:       'Literata', Georgia, serif;
+
+  /* Spacing tokens */
+  --r-sm:  6px;
+  --r-md:  10px;
+  --r-lg:  16px;
+  --r-xl:  24px;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.65;
+  font-size: 16px;
+  /* Subtle paper texture via CSS */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(180,150,90,0.04) 28px,
+      rgba(180,150,90,0.04) 29px
+    );
+}
+
+/* Paper texture overlay on root */
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  opacity: 1;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--paper-dark); }
+::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+
+/* ─── Selection ─── */
+::selection { background: rgba(224, 123, 0, 0.2); color: var(--ink); }
+
+/* ─── Focus ─── */
+:focus-visible {
+  outline: 2px solid var(--saffron);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ─── Typography ─── */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  line-height: 1.25;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+p { color: var(--ink-light); }
+
+a {
+  color: var(--forest);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ─── Buttons base ─── */
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+  border: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Inputs base ─── */
+input, select, textarea {
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+/* ─── Utility ─── */
+.text-devanagari { font-family: var(--font-devanagari); }
+.text-muted      { color: var(--ink-muted); }
+.text-faint      { color: var(--ink-faint); }
+.text-saffron    { color: var(--saffron); }
+.text-forest     { color: var(--forest); }
+
+/* ─── Decorative horizontal rule (gold) ─── */
+.rule-gold {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-rule), transparent);
+  margin: 0;
+}
+
+.rule-double {
+  border: none;
+  border-top: 2px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding-top: 3px;
+  margin: 0;
+}
+
+/* ─── Card / Panel ─── */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.card--elevated {
+  box-shadow: 0 4px 20px var(--shadow-deep);
+}
+
+/* ─── Stamp badge ─── */
+.stamp {
+  display: inline-block;
+  border: 2px solid currentColor;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  font-family: var(--font-body);
+}
+
+/* ─── Form elements ─── */
+.field-group {
+  margin-bottom: 22px;
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 7px;
+}
+
+.field-input {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 11px 14px;
+  font-size: 15px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--saffron);
+  box-shadow: 0 0 0 3px rgba(224, 123, 0, 0.12);
+}
+
+.field-input::placeholder {
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+/* ─── Primary Button ─── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--forest);
+  color: #fff;
+  padding: 13px 28px;
+  border-radius: var(--r-md);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 2px 6px rgba(46,92,46,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+  font-family: var(--font-body);
+}
+
+.btn-primary:hover {
+  background: #245224;
+  box-shadow: 0 4px 12px rgba(46,92,46,0.35);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ─── Secondary Button ─── */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--ink-light);
+  padding: 12px 24px;
+  border-radius: var(--r-md);
+  font-size: 15px;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  font-family: var(--font-body);
+}
+
+.btn-secondary:hover {
+  border-color: var(--border-dark);
+  color: var(--ink);
+  background: var(--paper-dark);
+}
+
+/* ─── Pill selector ─── */
+.pill {
+  display: inline-block;
+  padding: 7px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--ink-muted);
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+  line-height: 1.3;
+}
+
+.pill:hover {
+  border-color: var(--saffron);
+  color: var(--saffron);
+  background: rgba(224,123,0,0.04);
+}
+
+.pill.active {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: #fff;
+}
+
+/* ─── Section header ─── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.section-header__num {
+  width: 28px;
+  height: 28px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.section-header__title {
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: var(--font-serif);
+}
+
+/* ─── Loading spinner ─── */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.spinner--dark {
+  border-color: rgba(60,40,10,0.2);
+  border-top-color: var(--ink);
+}
+
+/* ─── Animations ─── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Utility: spinning icon (Tabler IconLoader2 etc.) */
+.spin {
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* Utility: input + inline mic button side by side */
+.planner__input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes waveDot {
+  0%, 80%, 100% { transform: scaleY(1); }
+  40%           { transform: scaleY(1.8); }
+}
+
+@keyframes recordPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(176,74,42,0.4); }
+  50%       { box-shadow: 0 0 0 10px rgba(176,74,42,0); }
+}
+
+/* ─── Animate utility ─── */
+.anim-fade-up { animation: fadeUp 0.45s ease both; }
+.anim-fade-in { animation: fadeIn 0.35s ease both; }
+
+/* ─── Skeleton ─── */
+.skeleton {
+  background: linear-gradient(90deg, var(--paper-dark) 25%, var(--paper-fold) 50%, var(--paper-dark) 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+/* ─── PWA safe area ─── */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }

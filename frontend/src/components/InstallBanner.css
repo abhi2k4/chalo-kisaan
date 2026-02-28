@@ -1,0 +1,68 @@
+.install-banner {
+  position: fixed;
+  bottom: 16px;
+  left: 12px; right: 12px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--ink);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-lg);
+  padding: 13px 16px;
+  box-shadow: 0 4px 24px rgba(28,18,8,0.35);
+  animation: fadeUp 0.4s ease both;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.install-banner__icon   { font-size: 24px; flex-shrink: 0; }
+
+.install-banner__content { flex: 1; min-width: 0; }
+
+.install-banner__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--paper);
+  font-family: var(--font-serif);
+  margin-bottom: 2px;
+}
+
+.install-banner__sub { font-size: 12px; color: rgba(253,246,227,0.6); }
+
+.install-banner__ios {
+  font-size: 12px;
+  color: rgba(253,246,227,0.6);
+  line-height: 1.4;
+}
+
+.install-banner__share-icon { color: #3b8cff; margin: 0 2px; }
+
+.install-banner__btn {
+  flex-shrink: 0;
+  background: var(--saffron);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.15s;
+}
+
+.install-banner__btn:hover { background: #c96e00; }
+
+.install-banner__close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: rgba(253,246,227,0.45);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s;
+}
+
+.install-banner__close:hover { color: var(--paper-dark); }
