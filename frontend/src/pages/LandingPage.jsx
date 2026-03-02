@@ -163,7 +163,7 @@ export default function LandingPage({ onStart, language = 'hindi' }) {
 
       <footer className="landing__footer">
         <div className="rule-gold" />
-        <p>Team <strong>grACE</strong> &nbsp;·&nbsp; AI for Bharat Hackathon &nbsp;·&nbsp; Powered by AWS &amp; Gemini</p>
+        <p>Team <strong>grACE</strong> &nbsp;·&nbsp; AI for Bharat Hackathon &nbsp;·&nbsp; Powered by AWS</p>
       </footer>
     </div>
   );

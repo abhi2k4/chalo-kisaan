@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.services.polly import synthesize_speech
+from app.utils.dynamo import log_event
 
 router = APIRouter()
 
@@ -25,6 +26,7 @@ async def text_to_speech(req: TTSRequest):
         raise HTTPException(status_code=422, detail="text cannot be empty.")
     try:
         url = await asyncio.to_thread(synthesize_speech, req.text, req.language)
+        log_event("tts_requested", {"language": req.language, "text_length": len(req.text)})
         return {"success": True, "audio_url": url}
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))

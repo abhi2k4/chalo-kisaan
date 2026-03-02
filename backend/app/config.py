@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     S3_ASSETS_BUCKET: str = "chalokisaan-assets"
     S3_AUDIO_TEMP_BUCKET: str = "chalokisaan-audio-temp"
     S3_DATA_BUCKET: str = "chalokisaan-data"
+    S3_MODELS_BUCKET: str = "chalokisaan-models"
 
     # Bedrock
     BEDROCK_MODEL_ID: str = "us.amazon.nova-pro-v1:0"

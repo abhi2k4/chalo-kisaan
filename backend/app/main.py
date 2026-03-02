@@ -55,6 +55,7 @@ from app.api.routes import (  # noqa: E402
     visualizations,
     generate_viz,
     tts,
+    projects,
 )
 
 PREFIX = "/api"
@@ -65,3 +66,4 @@ app.include_router(transcribe.router,     prefix=PREFIX, tags=["Voice / Transcri
 app.include_router(visualizations.router, prefix=PREFIX, tags=["Image Analysis"])
 app.include_router(generate_viz.router,   prefix=PREFIX, tags=["Visualization"])
 app.include_router(tts.router,            prefix=PREFIX, tags=["Text-to-Speech"])
+app.include_router(projects.router,       prefix=PREFIX, tags=["Projects"])

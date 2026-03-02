@@ -21,7 +21,7 @@ class FarmDataIn(BaseModel):
     location: Optional[str] = None
     soilType: Optional[str] = None
     waterSource: Optional[str] = None
-    existingInfrastructure: Optional[str] = None
+    existingInfrastructure: Optional[Any] = None
     budget: Optional[str] = None
     biodiversity: Optional[str] = None
     language: str = "hindi"
