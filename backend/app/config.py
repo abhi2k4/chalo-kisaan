@@ -8,57 +8,59 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # ── App ──────────────────────────────────────────────────────────────
+    # -- App --
     APP_NAME: str = "Chalo Kisaan API"
     APP_VERSION: str = "1.0.0"
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     API_DEBUG: bool = False
 
-    # ── AWS ──────────────────────────────────────────────────────────────
+    # -- AWS (IAM — for S3, Transcribe, Polly) --
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "ap-south-1"
 
-    # S3 buckets
+    # Bedrock API Key (bearer token auth — set via env var for boto3)
+    AWS_BEARER_TOKEN_BEDROCK: str = ""
+
+    # S3 buckets (ap-south-1)
     S3_ASSETS_BUCKET: str = "chalokisaan-assets"
     S3_AUDIO_TEMP_BUCKET: str = "chalokisaan-audio-temp"
-    S3_MODELS_BUCKET: str = "chalokisaan-models"
+    S3_DATA_BUCKET: str = "chalokisaan-data"
 
     # Bedrock
-    BEDROCK_MODEL_ID: str = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+    BEDROCK_MODEL_ID: str = "us.amazon.nova-pro-v1:0"
+    BEDROCK_LIGHT_MODEL_ID: str = "us.amazon.nova-lite-v1:0"
     BEDROCK_MAX_TOKENS: int = 4096
-    BEDROCK_GUARDRAIL_ID: str = ""       # filled after Guardrail is created in AWS console
-    BEDROCK_GUARDRAIL_VERSION: str = "1"
+    BEDROCK_REGION: str = "us-east-1"
 
-    # SageMaker
-    SAGEMAKER_SDXL_ENDPOINT: str = "chalokisaan-sdxl-endpoint"
-    SAGEMAKER_XGBOOST_ENDPOINT: str = "chalokisaan-xgboost-endpoint"
+    # SageMaker (optional — not required for MVP)
+    SAGEMAKER_SDXL_ENDPOINT: str = ""
+    SAGEMAKER_XGBOOST_ENDPOINT: str = ""
 
     # Transcribe
-    TRANSCRIBE_CUSTOM_VOCAB: str = "chalokisaan-agri-vocab"
+    TRANSCRIBE_CUSTOM_VOCAB: str = ""
 
     # Polly
     POLLY_S3_CACHE_PREFIX: str = "tts-cache"
 
-    # ── Database ─────────────────────────────────────────────────────────
+    # -- Database --
     DATABASE_URL: str = "postgresql://kisaan_admin:changeme@localhost:5432/chalo_kisaan"
     DATABASE_ECHO: bool = False
 
-    # ── Auth ─────────────────────────────────────────────────────────────
+    # -- Auth --
     JWT_SECRET_KEY: str = "CHANGE_ME_IN_PRODUCTION"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
 
-    # ── CORS ─────────────────────────────────────────────────────────────
-    # Comma-separated list of allowed origins
-    CORS_ORIGINS: str = "http://localhost:3000,https://localhost:3000,https://localhost:3443"
+    # -- CORS --
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:8000"
 
-    # ── Logging ──────────────────────────────────────────────────────────
+    # -- Logging --
     LOG_LEVEL: str = "INFO"
 
     class Config:
-        env_file = ".env"
+        env_file = (".env", "../.env")
         env_file_encoding = "utf-8"
         extra = "ignore"
 

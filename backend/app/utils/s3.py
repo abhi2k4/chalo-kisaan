@@ -1,14 +1,17 @@
 """
 Amazon S3 utility — upload files, generate pre-signed URLs.
+Uses a cached client to avoid creating new connections per request.
 """
 
 from __future__ import annotations
 import logging
 import mimetypes
 import uuid
+from functools import lru_cache
 from typing import Optional
 
 import boto3
+from botocore.config import Config as BotoConfig
 from botocore.exceptions import ClientError
 
 from app.config import get_settings
@@ -17,12 +20,14 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
+@lru_cache()
 def _s3():
     return boto3.client(
         "s3",
         region_name=settings.AWS_REGION,
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID or None,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY or None,
+        config=BotoConfig(retries={"mode": "standard", "max_attempts": 3}),
     )
 
 
@@ -37,20 +42,16 @@ def upload_file(
     Upload raw bytes to S3.
     Returns {"bucket": str, "key": str, "url": str}
     """
-    bucket  = bucket or settings.S3_ASSETS_BUCKET
-    ext     = filename.rsplit(".", 1)[-1] if "." in filename else "bin"
-    key     = f"{prefix}/{uuid.uuid4().hex}.{ext}"
-    ct      = content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
+    bucket = bucket or settings.S3_ASSETS_BUCKET
+    ext = filename.rsplit(".", 1)[-1] if "." in filename else "bin"
+    key = f"{prefix}/{uuid.uuid4().hex}.{ext}"
+    ct = content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
 
-    _s3().put_object(
-        Bucket=bucket,
-        Key=key,
-        Body=file_bytes,
-        ContentType=ct,
-    )
+    client = _s3()
+    client.put_object(Bucket=bucket, Key=key, Body=file_bytes, ContentType=ct)
     logger.info("Uploaded to s3://%s/%s", bucket, key)
 
-    url = _s3().generate_presigned_url(
+    url = client.generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket, "Key": key},
         ExpiresIn=3600,

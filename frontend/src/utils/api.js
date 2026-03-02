@@ -1,5 +1,14 @@
 const API_BASE = process.env.REACT_APP_API_URL || '/api';
 
+/**
+ * Parse error body from FastAPI responses.
+ * FastAPI returns {"detail": "..."} for HTTPException,
+ * but custom handlers may return {"error": "..."}.
+ */
+function parseErrorMessage(errBody, fallback) {
+  return errBody?.detail || errBody?.error || errBody?.message || fallback;
+}
+
 export async function generatePlanStream(formData, onDelta, onComplete, onError) {
   try {
     const response = await fetch(`${API_BASE}/generate-plan`, {
@@ -10,7 +19,7 @@ export async function generatePlanStream(formData, onDelta, onComplete, onError)
 
     if (!response.ok) {
       const err = await response.json();
-      throw new Error(err.error || 'Server error');
+      throw new Error(parseErrorMessage(err, 'Server error'));
     }
 
     const reader = response.body.getReader();
@@ -48,7 +57,7 @@ export async function analyzeImage(imageFile) {
 
   if (!response.ok) {
     const err = await response.json();
-    throw new Error(err.error || 'Image analysis failed');
+    throw new Error(parseErrorMessage(err, 'Image analysis failed'));
   }
 
   return response.json();
@@ -63,22 +72,22 @@ export async function generateVisualization(farmData, planData) {
 
   if (!response.ok) {
     const err = await response.json();
-    throw new Error(err.error || 'Visualization failed');
+    throw new Error(parseErrorMessage(err, 'Visualization failed'));
   }
 
   return response.json();
 }
 
-export async function parseVoiceTranscript(transcript) {
+export async function parseVoiceTranscript(transcript, language = 'hindi') {
   const response = await fetch(`${API_BASE}/parse-voice`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ transcript }),
+    body: JSON.stringify({ transcript, language }),
   });
 
   if (!response.ok) {
     const err = await response.json();
-    throw new Error(err.error || 'Voice parse failed');
+    throw new Error(parseErrorMessage(err, 'Voice parse failed'));
   }
 
   return response.json();

@@ -1,9 +1,12 @@
 """
 Route: POST /api/analyze-image
 Accepts a farm photo, uploads to S3, and runs Bedrock image analysis.
+
+Frontend expects: {success: true, analysis: {agritourismPotential, visualObservations, potentialServices[]}}
 """
 
 from __future__ import annotations
+import asyncio
 import logging
 
 from fastapi import APIRouter, File, UploadFile, HTTPException
@@ -30,24 +33,25 @@ async def analyze_image(image: UploadFile = File(...)):
     if len(image_bytes) > MAX_IMAGE_SIZE:
         raise HTTPException(status_code=413, detail="Image exceeds 10 MB limit.")
 
-    # Upload to S3
-    s3_result = upload_file(
+    # Upload to S3 (run in thread since boto3 is sync)
+    s3_result = await asyncio.to_thread(
+        upload_file,
         file_bytes=image_bytes,
         filename=image.filename or "farm.jpg",
         prefix="farm-images",
         content_type=image.content_type,
     )
 
-    # Analyse with Bedrock
+    # Analyse with Bedrock (run in thread)
     try:
-        analysis = bedrock.analyze_image(image_bytes)
+        analysis = await asyncio.to_thread(bedrock.analyze_image, image_bytes)
     except Exception as e:
-        logger.error("Image analysis failed: %s", e)
+        logger.error("Image analysis failed: %s", e, exc_info=True)
         raise HTTPException(status_code=502, detail=f"Analysis failed: {e}")
 
     return {
-        "success":  True,
+        "success": True,
         "analysis": analysis,
-        "s3_key":   s3_result["key"],
-        "url":      s3_result["url"],
+        "s3_key": s3_result["key"],
+        "url": s3_result["url"],
     }
