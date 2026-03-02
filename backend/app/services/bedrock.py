@@ -82,7 +82,7 @@ Farm Details:
 - Soil Type: {farm_data.get('soilType', 'Unknown')}
 - Water Source: {farm_data.get('waterSource', 'Unknown')}
 - Budget: Rs.{farm_data.get('budget', 'Unknown')}
-- Existing Infrastructure: {farm_data.get('existingInfrastructure', 'None')}
+- Existing Infrastructure: {', '.join(farm_data['existingInfrastructure']) if isinstance(farm_data.get('existingInfrastructure'), list) else farm_data.get('existingInfrastructure', 'None')}
 - Biodiversity / Crops: {farm_data.get('biodiversity', 'Unknown')}
 
 Create a comprehensive, realistic agritourism business plan for this farmer.

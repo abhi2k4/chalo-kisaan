@@ -18,13 +18,13 @@ const SOIL_TYPES    = ["Red Soil","Black Cotton Soil","Alluvial Soil","Laterite 
 const WATER_SOURCES = ["River / Stream","Borewell","Open Well","Canal Irrigation","Rainwater Only","Lake / Pond"];
 const INFRA_OPTIONS = ["Tea Bungalow","Old House / Barn","Tool Shed","Storage Room","Electricity","Road Access","None"];
 const BIODIVERSITY  = ["Mango Orchard","Sugarcane","Paddy / Rice","Wheat","Grapes / Vineyard","Vegetable Farm","Coconut Grove","Mixed Crops","Barren Land"];
-const LANGUAGES     = [{ key:"english", label:"EN" },{ key:"hindi", label:"हि" },{ key:"marathi", label:"म" }];
+const LANGUAGES     = [{ key:"english", label:"EN" },{ key:"hindi", label:"हि" },{ key:"marathi", label:"म" },{ key:"punjabi", label:"ਪੰ" },{ key:"gujarati", label:"ગુ" }];
 const STEPS         = ["Farm Basics", "Resources & Budget", "Review & Generate"];
 
 export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
   const [form, setForm] = useState({
     landSize:"", location:"", soilType:"", waterSource:"",
-    existingInfrastructure:"", budget:"", biodiversity:"", language:"hindi",
+    existingInfrastructure:[], budget:"", biodiversity:"", language:"hindi",
   });
   const [showVoice,      setShowVoice]      = useState(false);
   const [imagePreview,   setImagePreview]   = useState(null);
@@ -41,6 +41,18 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const togglePill = (key, val) => set(key, form[key] === val ? "" : val);
+  const toggleInfra = (val) => {
+    if (val === "None") {
+      setForm(p => ({ ...p, existingInfrastructure: p.existingInfrastructure.includes("None") ? [] : ["None"] }));
+    } else {
+      setForm(p => ({
+        ...p,
+        existingInfrastructure: p.existingInfrastructure.includes(val)
+          ? p.existingInfrastructure.filter(v => v !== val)
+          : [...p.existingInfrastructure.filter(v => v !== "None"), val],
+      }));
+    }
+  };
 
   const handleVoiceData = (data) => {
     if (!data) return;
@@ -50,7 +62,7 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
       location:              data.location               || p.location,
       soilType:              data.soilType               || p.soilType,
       waterSource:           data.waterSource            || p.waterSource,
-      existingInfrastructure:data.existingInfrastructure || p.existingInfrastructure,
+      existingInfrastructure:data.existingInfrastructure ? [data.existingInfrastructure] : p.existingInfrastructure,
       budget:                data.budget?.toString()     || p.budget,
       biodiversity:          data.biodiversity           || p.biodiversity,
       language:              data.detectedLanguage       || p.language,
@@ -66,7 +78,9 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
     try {
       const res = await analyzeImage(file);
       if (res.success) setImageAnalysis(res.analysis);
-    } catch {}
+    } catch {
+      setError("Image analysis failed — you can still continue without it.");
+    }
     setIsAnalyzingImg(false);
   };
 
@@ -102,7 +116,7 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
     { Icon: IconSeeding,          k: "Soil Type",      v: form.soilType || "Not specified" },
     { Icon: IconPlant2,           k: "Crops",          v: form.biodiversity || "Not specified" },
     { Icon: IconDroplets,         k: "Water Source",   v: form.waterSource || "Not specified" },
-    { Icon: IconBuildingWarehouse,k: "Infrastructure", v: form.existingInfrastructure || "None" },
+    { Icon: IconBuildingWarehouse,k: "Infrastructure", v: form.existingInfrastructure.length > 0 ? form.existingInfrastructure.join(", ") : "None" },
     { Icon: IconCurrencyRupee,    k: "Budget",         v: form.budget ? `\u20b9${Number(form.budget).toLocaleString("en-IN")}` : "—" },
     { Icon: IconLanguage,         k: "Language",       v: form.language.charAt(0).toUpperCase() + form.language.slice(1) },
   ];
@@ -210,6 +224,12 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
                 )}
               </div>
 
+              {error && step === 1 && (
+                <div className="planner__error" style={{marginTop:8}}>
+                  <IconAlertCircle size={15} stroke={2} /> {error}
+                </div>
+              )}
+
               {imageAnalysis && (
                 <div className="planner__analysis">
                   <div className="planner__analysis-header">
@@ -274,7 +294,7 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
                 <IconArrowLeft size={15} stroke={2} /> Cancel
               </button>
               <button className="btn-primary planner__next-btn"
-                onClick={() => setStep(2)} disabled={!form.landSize || !form.location}>
+                onClick={() => { setError(null); setStep(2); }} disabled={!form.landSize || !form.location}>
                 Continue <IconArrowRight size={15} stroke={2} />
               </button>
             </div>
@@ -311,8 +331,8 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
               <label className="planner__label">Existing Infrastructure <span className="planner__label-devanagari">· मौजूदा ढांचा</span></label>
               <div className="planner__pill-group">
                 {INFRA_OPTIONS.map(inf => (
-                  <button key={inf} className={`pill ${form.existingInfrastructure === inf ? "active" : ""}`}
-                    onClick={() => togglePill("existingInfrastructure", inf)}>{inf}</button>
+                  <button key={inf} className={`pill ${form.existingInfrastructure.includes(inf) ? "active" : ""}`}
+                    onClick={() => toggleInfra(inf)}>{inf}</button>
                 ))}
               </div>
             </div>

@@ -92,3 +92,29 @@ export async function parseVoiceTranscript(transcript, language = 'hindi') {
 
   return response.json();
 }
+
+export async function savePlan(farmData, planData, language = 'hindi') {
+  const response = await fetch(`${API_BASE}/save-plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ farmData, planData, language }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Save failed'));
+  }
+
+  return response.json();
+}
+
+export async function loadPlan(planId) {
+  const response = await fetch(`${API_BASE}/plans/${planId}`);
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Plan not found'));
+  }
+
+  return response.json();
+}

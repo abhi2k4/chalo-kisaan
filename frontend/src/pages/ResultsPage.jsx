@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   IconArrowLeft, IconHome, IconMap, IconChecklist, IconCurrencyRupee,
   IconEye, IconBuildingBank, IconTarget, IconSparkles, IconUsers,
   IconCalendar, IconAlertTriangle, IconClock, IconBuildingWarehouse,
   IconTrendingUp, IconTrophy, IconSunrise, IconRefresh, IconWind,
-  IconBrush, IconClipboard, IconPrinter, IconBuilding,
+  IconBrush, IconClipboard, IconPrinter, IconBuilding, IconCloudUpload, IconCheck, IconLoader2,
 } from "@tabler/icons-react";
 import Narrator from "../components/Narrator";
 import { useNarrator } from "../hooks/useNarrator";
-import { generateVisualization } from "../utils/api";
+import { generateVisualization, savePlan } from "../utils/api";
+import { exportToPDF } from "../utils/pdfExport";
 import "./ResultsPage.css";
 
 const fmt = (n) => {
@@ -68,20 +69,21 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
   const [tab, setTab] = useState("overview");
   const [viz, setViz] = useState(null);
   const [vizLoading, setVizLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
+  const [pdfGenerating, setPdfGenerating] = useState(false);
 
   const { isSpeaking, isSupported, narratePage, stop } = useNarrator(language);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (planData && farmData) loadViz(); }, []);
-
-  const loadViz = async () => {
+  const loadViz = useCallback(async () => {
     setVizLoading(true);
     try {
       const res = await generateVisualization(farmData, planData);
       if (res.success) setViz(res.visualization);
     } catch {}
     setVizLoading(false);
-  };
+  }, [farmData, planData]);
+
+  useEffect(() => { if (planData && farmData) loadViz(); }, [planData, farmData, loadViz]);
 
   if (!planData) {
     return (
@@ -389,8 +391,26 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
         <button className="btn-secondary" onClick={onBack}>
           <IconRefresh size={15} stroke={2} /> New Plan
         </button>
-        <button className="btn-primary" onClick={() => window.print()}>
-          <IconPrinter size={15} stroke={2} /> Download Report
+        <button className="btn-secondary" onClick={async () => {
+          if (saveStatus === 'saving') return;
+          setSaveStatus('saving');
+          try {
+            await savePlan(farmData, planData, language);
+            setSaveStatus('saved');
+          } catch { setSaveStatus('error'); }
+        }} disabled={saveStatus === 'saving'}>
+          {saveStatus === 'saving' ? <><IconLoader2 size={15} stroke={2} className="spin" /> Saving...</>
+           : saveStatus === 'saved' ? <><IconCheck size={15} stroke={2} /> Saved to Cloud</>
+           : <><IconCloudUpload size={15} stroke={2} /> Save to Cloud</>}
+        </button>
+        <button className="btn-primary" disabled={pdfGenerating} onClick={async () => {
+          setPdfGenerating(true);
+          try { await exportToPDF(planData, farmData, farmImage); } catch {}
+          setPdfGenerating(false);
+        }}>
+          {pdfGenerating
+            ? <><IconLoader2 size={15} stroke={2} className="spin" /> Preparing PDF...</>
+            : <><IconPrinter size={15} stroke={2} /> Download Report</>}
         </button>
       </div>
     </div>

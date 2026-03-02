@@ -18,6 +18,7 @@ from fastapi.responses import StreamingResponse
 
 from app.schemas.schemas import FarmDataIn
 from app.services import bedrock
+from app.utils.dynamo import log_event
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -64,6 +65,13 @@ async def generate_plan(req: FarmDataIn):
                 plan_data = {"raw": raw_text}
 
             yield _sse({"type": "complete", "data": plan_data})
+
+            # Audit log
+            log_event("plan_generated", {
+                "location": farm_dict.get("location"),
+                "service": plan_data.get("recommendedService") if isinstance(plan_data, dict) else None,
+                "language": language,
+            })
 
         except Exception as e:
             logger.error("Plan generation error: %s", e, exc_info=True)

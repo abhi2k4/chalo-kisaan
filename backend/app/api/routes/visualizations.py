@@ -13,6 +13,7 @@ from fastapi import APIRouter, File, UploadFile, HTTPException
 
 from app.services import bedrock
 from app.utils.s3 import upload_file
+from app.utils.dynamo import log_event
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -48,6 +49,11 @@ async def analyze_image(image: UploadFile = File(...)):
     except Exception as e:
         logger.error("Image analysis failed: %s", e, exc_info=True)
         raise HTTPException(status_code=502, detail=f"Analysis failed: {e}")
+
+    log_event("image_analyzed", {
+        "potential": analysis.get("agritourismPotential") if isinstance(analysis, dict) else None,
+        "s3_key": s3_result["key"],
+    })
 
     return {
         "success": True,

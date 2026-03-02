@@ -19,6 +19,8 @@ const EXAMPLE_PHRASES = {
   hindi: 'मेरे पास 5 एकड़ जमीन है, पुणे के पास, बजट 2 लाख है',
   marathi: 'माझ्याकडे 3 एकर जमीन आहे, नाशिकजवळ, द्राक्षे आहेत',
   english: 'I have 10 acres near Kolhapur with mango orchards, budget 3 lakhs',
+  punjabi: 'ਮੇਰੇ ਕੋਲ 4 ਏਕੜ ਜ਼ਮੀਨ ਹੈ, ਲੁਧਿਆਣੇ ਦੇ ਨੇੜੇ, ਬਜਟ 1.5 ਲੱਖ ਹੈ',
+  gujarati: 'મારી પાસે 6 એકર જમીન છે, સુરત પાસે, બજેટ 2 લાખ છે',
 };
 
 export default function VoiceInput({ onFormDataParsed, onClose }) {
