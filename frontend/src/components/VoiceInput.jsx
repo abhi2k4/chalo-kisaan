@@ -44,7 +44,7 @@ export default function VoiceInput({ onFormDataParsed, onClose }) {
     setIsParsing(true);
     setParseError(null);
     try {
-      const result = await parseVoiceTranscript(text);
+      const result = await parseVoiceTranscript(text, selectedLang);
       if (result.success && result.formData) {
         onFormDataParsed(result.formData);
       }
