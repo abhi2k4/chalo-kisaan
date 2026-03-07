@@ -17,7 +17,7 @@ const MAX_RETRIES = 4;
  *   onResult   : (transcript: string) => void
  *   disabled   : bool
  */
-export default function FieldMic({ language = 'english', onResult, disabled }) {
+export default React.memo(function FieldMic({ language = 'english', onResult, disabled }) {
   const [state, setState] = useState('idle'); // idle | listening | error
   const recRef      = useRef(null);
   const retryRef    = useRef(0);
@@ -101,4 +101,4 @@ export default function FieldMic({ language = 'english', onResult, disabled }) {
       }
     </button>
   );
-}
+});

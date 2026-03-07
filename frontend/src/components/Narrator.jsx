@@ -10,7 +10,7 @@ import './Narrator.css';
  *   onSpeak     : () => void  — start narrating current page
  *   onStop      : () => void  — stop narration
  */
-export default function Narrator({ isSpeaking, isSupported, onSpeak, onStop }) {
+export default React.memo(function Narrator({ isSpeaking, isSupported, onSpeak, onStop }) {
   if (!isSupported) return null;
 
   return (
@@ -30,4 +30,4 @@ export default function Narrator({ isSpeaking, isSupported, onSpeak, onStop }) {
       )}
     </button>
   );
-}
+});

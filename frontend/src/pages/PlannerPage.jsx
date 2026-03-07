@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   IconArrowLeft, IconArrowRight, IconPlant2, IconMicrophone,
   IconCamera, IconSearch, IconRuler, IconMapPin, IconDroplets,
@@ -65,8 +65,10 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange, lang
   const { isSpeaking, isSupported, narratePage, stop } = useNarrator(form.language);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-  const togglePill = (key, val) => set(key, form[key] === val ? "" : val);
-  const toggleInfra = (val) => {
+  const togglePill = useCallback((key, val) => {
+    setForm(p => ({ ...p, [key]: p[key] === val ? "" : val }));
+  }, []);
+  const toggleInfra = useCallback((val) => {
     if (val === "None") {
       setForm(p => ({ ...p, existingInfrastructure: p.existingInfrastructure.includes("None") ? [] : ["None"] }));
     } else {
@@ -77,7 +79,7 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange, lang
           : [...p.existingInfrastructure.filter(v => v !== "None"), val],
       }));
     }
-  };
+  }, []);
 
   const handleVoiceData = (data) => {
     if (!data) return;
@@ -98,6 +100,9 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange, lang
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (imagePreview && imagePreview.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setImagePreview(URL.createObjectURL(file));
     setIsAnalyzingImg(true);
     try {

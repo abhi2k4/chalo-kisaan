@@ -1,5 +1,3 @@
-import html2pdf from 'html2pdf.js';
-
 const fmt = (n) => {
   if (!n) return '—';
   return `\u20b9${Number(n).toLocaleString('en-IN')}`;
@@ -12,6 +10,8 @@ const fmt = (n) => {
  */
 export async function exportToPDF(planData, farmData, farmImage) {
   if (!planData) return;
+
+  const html2pdf = (await import('html2pdf.js')).default;
 
   const container = document.createElement('div');
   container.style.cssText = 'position:absolute;left:-9999px;top:0;width:210mm;font-family:sans-serif;color:#1c1208;';

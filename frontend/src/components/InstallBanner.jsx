@@ -37,13 +37,16 @@ export default function InstallBanner() {
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // If already added to home screen
-    window.addEventListener('appinstalled', () => {
+    const installedHandler = () => {
       setIsInstalled(true);
       setShowBanner(false);
-    });
+    };
+    window.addEventListener('appinstalled', installedHandler);
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
+    };
   }, []);
 
   const handleInstall = async () => {

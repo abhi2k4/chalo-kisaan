@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
   IconArrowLeft, IconHome, IconMap, IconChecklist, IconCurrencyRupee,
@@ -21,7 +21,7 @@ const fmt = (n) => {
   return `\u20b9${n}`;
 };
 
-function Gauge({ score }) {
+const Gauge = React.memo(function Gauge({ score }) {
   const [anim, setAnim] = useState(false);
   useEffect(() => { const t = setTimeout(() => setAnim(true), 400); return () => clearTimeout(t); }, []);
   const color = score >= 70 ? "var(--forest)" : score >= 45 ? "var(--saffron)" : "var(--terracotta)";
@@ -40,9 +40,9 @@ function Gauge({ score }) {
       <span className="results__score-label">Suitability</span>
     </div>
   );
-}
+});
 
-function RevBar({ label, value, max }) {
+const RevBar = React.memo(function RevBar({ label, value, max }) {
   const [anim, setAnim] = useState(false);
   useEffect(() => { const t = setTimeout(() => setAnim(true), 500); return () => clearTimeout(t); }, []);
   const pct = max ? Math.min((value / max) * 100, 100) : 0;
@@ -57,7 +57,7 @@ function RevBar({ label, value, max }) {
       </div>
     </div>
   );
-}
+});
 
 const TABS = [
   { key:"overview",      label:"Overview",   Icon: IconMap },
@@ -81,6 +81,7 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
   const [vizLoading, setVizLoading] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const shareTimerRef = useRef(null);
 
   // AI Land Visualization state
   const [selectedServices, setSelectedServices] = useState([]);
@@ -177,13 +178,15 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
     setAiImageLoading(false);
   }, [farmImage, selectedServices, farmData, vizMode, planData, reportId]);
 
+  useEffect(() => () => clearTimeout(shareTimerRef.current), []);
+
   const handleShare = useCallback(() => {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
+      clearTimeout(shareTimerRef.current);
       setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2000);
+      shareTimerRef.current = setTimeout(() => setShareCopied(false), 2000);
     }).catch(() => {
-      // Fallback for older browsers
       window.prompt("Copy this link:", url);
     });
   }, []);
@@ -195,6 +198,23 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
     planData.revenueStreams?.forEach(s => { if (s.stream) services.add(s.stream); });
     planData.uniqueExperiences?.forEach(e => { if (e) services.add(e); });
     return [...services];
+  }, [planData]);
+
+  const maxRev = useMemo(() =>
+    planData?.revenueStreams
+      ? Math.max(...planData.revenueStreams.map(r => r.monthlyRevenue || 0))
+      : 0,
+    [planData?.revenueStreams]
+  );
+
+  const kpis = useMemo(() => {
+    if (!planData) return [];
+    return [
+      { Icon: IconCurrencyRupee, val: fmt(planData.monthlyRevenueEstimate), label: "Monthly Revenue" },
+      { Icon: IconTrendingUp,    val: fmt(planData.yearlyRevenueEstimate),  label: "Annual Potential" },
+      { Icon: IconClock,         val: `${planData.breakEvenMonths || "\u2014"} mo`, label: "Break Even" },
+      { Icon: IconBuildingWarehouse, val: fmt(planData.totalSetupCost),     label: "Setup Cost" },
+    ];
   }, [planData]);
 
   // Loading state
@@ -217,10 +237,6 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
       </div>
     );
   }
-
-  const maxRev = planData.revenueStreams
-    ? Math.max(...planData.revenueStreams.map(r => r.monthlyRevenue || 0))
-    : 0;
 
   return (
     <div className="results">
@@ -249,12 +265,7 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
       <div className="results__score-strip">
         <Gauge score={planData.suitabilityScore || 72} />
         <div className="results__kpi-row">
-          {[
-            { Icon: IconCurrencyRupee, val: fmt(planData.monthlyRevenueEstimate), label: "Monthly Revenue" },
-            { Icon: IconTrendingUp,    val: fmt(planData.yearlyRevenueEstimate),  label: "Annual Potential" },
-            { Icon: IconClock,         val: `${planData.breakEvenMonths || "\u2014"} mo`, label: "Break Even" },
-            { Icon: IconBuildingWarehouse, val: fmt(planData.totalSetupCost),     label: "Setup Cost" },
-          ].map(k => (
+          {kpis.map(k => (
             <div key={k.label} className="results__kpi">
               <span className="results__kpi-icon"><k.Icon size={18} stroke={1.5} /></span>
               <span className="results__kpi-val">{k.val}</span>
@@ -469,7 +480,7 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
                   {farmImage && (
                     <div className="results__viz-panel">
                       <span className="results__viz-badge results__viz-badge--before">Before</span>
-                      <img src={farmImage} alt="Current farm" className="results__viz-img" />
+                      <img src={farmImage} alt="Current farm" className="results__viz-img" loading="lazy" />
                       <div className="results__viz-cap">Your farm today</div>
                     </div>
                   )}
@@ -482,7 +493,7 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
                         <span style={{fontSize:11, color:"var(--ink-faint)"}}>This may take 10-15 seconds</span>
                       </div>
                     ) : aiImage ? (
-                      <img src={aiImage} alt="AI-generated farm transformation" className="results__viz-img" />
+                      <img src={aiImage} alt="AI-generated farm transformation" className="results__viz-img" loading="lazy" />
                     ) : (
                       <div className="results__farm-illustration">
                         <div className="results__farm-sky" />
