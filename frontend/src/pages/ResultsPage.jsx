@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import {
   IconArrowLeft, IconHome, IconMap, IconChecklist, IconCurrencyRupee,
   IconEye, IconBuildingBank, IconTarget, IconSparkles, IconUsers,
   IconCalendar, IconAlertTriangle, IconClock, IconBuildingWarehouse,
   IconTrendingUp, IconTrophy, IconSunrise, IconRefresh, IconWind,
-  IconBrush, IconClipboard, IconPrinter, IconBuilding, IconCloudUpload, IconCheck, IconLoader2,
+  IconBrush, IconClipboard, IconPrinter, IconBuilding, IconLoader2,
+  IconShare, IconCheck,
 } from "@tabler/icons-react";
 import Narrator from "../components/Narrator";
 import { useNarrator } from "../hooks/useNarrator";
-import { generateVisualization, visualizeLand, savePlan } from "../utils/api";
+import { generateVisualization, visualizeLand, getReport, saveVisualization } from "../utils/api";
 import { exportToPDF } from "../utils/pdfExport";
 import "./ResultsPage.css";
 
 const fmt = (n) => {
-  if (!n) return "—";
+  if (!n) return "\u2014";
   if (n >= 100000) return `\u20b9${(n/100000).toFixed(1)} L`;
   if (n >= 1000)   return `\u20b9${(n/1000).toFixed(0)}K`;
   return `\u20b9${n}`;
@@ -65,12 +67,20 @@ const TABS = [
   { key:"schemes",       label:"Schemes",    Icon: IconBuildingBank },
 ];
 
-export default function ResultsPage({ planData, farmData, farmImage, onBack, onReset, language = "hindi" }) {
+export default function ResultsPage({ sessionReport, language = "hindi", onBack, onReset }) {
+  const { reportId } = useParams();
+
+  const [planData, setPlanData] = useState(sessionReport?.planData || null);
+  const [farmData, setFarmData] = useState(sessionReport?.farmData || null);
+  const [farmImage, setFarmImage] = useState(sessionReport?.farmImageUrl || null);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
+
   const [tab, setTab] = useState("overview");
   const [viz, setViz] = useState(null);
   const [vizLoading, setVizLoading] = useState(false);
-  const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
   const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   // AI Land Visualization state
   const [selectedServices, setSelectedServices] = useState([]);
@@ -80,6 +90,34 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
   const [aiImageError, setAiImageError] = useState(null);
 
   const { isSpeaking, isSupported, narratePage, stop } = useNarrator(language);
+
+  // Load from S3 if we don't have session data (shared link / refresh)
+  useEffect(() => {
+    if (planData && farmData) return; // already have data from session
+    if (!reportId) return;
+
+    setLoading(true);
+    setLoadError(null);
+    getReport(reportId)
+      .then((res) => {
+        if (res.success) {
+          setPlanData(res.planData);
+          setFarmData(res.farmData);
+          if (res.farmImageUrl) setFarmImage(res.farmImageUrl);
+          // Load saved AI images
+          if (res.aiImages?.length > 0) {
+            const last = res.aiImages[res.aiImages.length - 1];
+            if (last.url) setAiImage(last.url);
+            if (last.services) setSelectedServices(last.services);
+            if (last.mode) setVizMode(last.mode);
+          }
+        } else {
+          setLoadError("Report not found");
+        }
+      })
+      .catch((err) => setLoadError(err.message))
+      .finally(() => setLoading(false));
+  }, [reportId, planData, farmData]);
 
   const loadViz = useCallback(async () => {
     setVizLoading(true);
@@ -98,8 +136,21 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
     setAiImageError(null);
     setAiImage(null);
     try {
-      // farmImage is a base64 data URL — strip prefix for API
-      const base64 = farmImage.includes(",") ? farmImage.split(",")[1] : farmImage;
+      // farmImage may be a presigned URL or base64 data URL
+      let base64;
+      if (farmImage.startsWith('data:')) {
+        base64 = farmImage.includes(",") ? farmImage.split(",")[1] : farmImage;
+      } else {
+        // Presigned URL — fetch and convert to base64
+        const resp = await fetch(farmImage);
+        const blob = await resp.blob();
+        base64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(",")[1]);
+          reader.readAsDataURL(blob);
+        });
+      }
+
       const res = await visualizeLand(
         base64,
         selectedServices,
@@ -108,7 +159,15 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
         planData.recommendedService || "",
       );
       if (res.success) {
-        setAiImage(`data:image/png;base64,${res.generatedImage}`);
+        const generatedBase64 = `data:image/png;base64,${res.generatedImage}`;
+        setAiImage(generatedBase64);
+
+        // Auto-save visualization to S3
+        if (reportId) {
+          try {
+            await saveVisualization(reportId, generatedBase64, selectedServices, vizMode);
+          } catch {}
+        }
       } else {
         setAiImageError("Generation failed. Please try again.");
       }
@@ -116,21 +175,45 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
       setAiImageError(err.message || "Something went wrong.");
     }
     setAiImageLoading(false);
-  }, [farmImage, selectedServices, farmData, vizMode, planData]);
+  }, [farmImage, selectedServices, farmData, vizMode, planData, reportId]);
+
+  const handleShare = useCallback(() => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    }).catch(() => {
+      // Fallback for older browsers
+      window.prompt("Copy this link:", url);
+    });
+  }, []);
 
   // Build service options from plan data
   const serviceOptions = React.useMemo(() => {
+    if (!planData) return [];
     const services = new Set();
     planData.revenueStreams?.forEach(s => { if (s.stream) services.add(s.stream); });
     planData.uniqueExperiences?.forEach(e => { if (e) services.add(e); });
     return [...services];
   }, [planData]);
 
-  if (!planData) {
+  // Loading state
+  if (loading) {
     return (
       <div style={{ display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",gap:16 }}>
-        <p>No plan data found.</p>
-        <button className="btn-primary" onClick={onReset}>Start Over</button>
+        <IconLoader2 size={32} stroke={2} className="spin" style={{color:"var(--forest)"}} />
+        <p>Loading report...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (loadError || (!planData && !loading)) {
+    return (
+      <div style={{ display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"100vh",gap:16 }}>
+        <IconAlertTriangle size={32} stroke={2} style={{color:"var(--terracotta)"}} />
+        <p>{loadError || "Report not found"}</p>
+        <button className="btn-primary" onClick={onReset}>Go Home</button>
       </div>
     );
   }
@@ -151,7 +234,7 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
       {/* Header */}
       <header className="results__header">
         <button className="results__nav-btn" onClick={onBack}>
-          <IconArrowLeft size={15} stroke={2} /> Redo
+          <IconArrowLeft size={15} stroke={2} /> New Plan
         </button>
         <div className="results__header-center">
           <div className="results__service-name">{planData.recommendedService}</div>
@@ -169,7 +252,7 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
           {[
             { Icon: IconCurrencyRupee, val: fmt(planData.monthlyRevenueEstimate), label: "Monthly Revenue" },
             { Icon: IconTrendingUp,    val: fmt(planData.yearlyRevenueEstimate),  label: "Annual Potential" },
-            { Icon: IconClock,         val: `${planData.breakEvenMonths || "—"} mo`, label: "Break Even" },
+            { Icon: IconClock,         val: `${planData.breakEvenMonths || "\u2014"} mo`, label: "Break Even" },
             { Icon: IconBuildingWarehouse, val: fmt(planData.totalSetupCost),     label: "Setup Cost" },
           ].map(k => (
             <div key={k.label} className="results__kpi">
@@ -192,7 +275,7 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
 
       <div className="results__body">
 
-        {/* ── OVERVIEW ── */}
+        {/* OVERVIEW */}
         {tab === "overview" && (
           <div className="results__tab-content anim-fade-up">
             <div className="rc">
@@ -249,7 +332,7 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
           </div>
         )}
 
-        {/* ── SETUP PLAN ── */}
+        {/* SETUP PLAN */}
         {tab === "plan" && (
           <div className="results__tab-content anim-fade-up">
             <div className="rc">
@@ -288,7 +371,7 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
           </div>
         )}
 
-        {/* ── REVENUE ── */}
+        {/* REVENUE */}
         {tab === "revenue" && (
           <div className="results__tab-content anim-fade-up">
             <div className="rc">
@@ -320,7 +403,7 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
           </div>
         )}
 
-        {/* ── VISUALISATION ── */}
+        {/* VISUALISATION */}
         {tab === "visualization" && (
           <div className="results__tab-content anim-fade-up">
 
@@ -448,7 +531,7 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
                   <div className="rc__body">
                     <div className="results__changes-list">
                       {viz.keyChanges?.map((c, i) => (
-                        <div key={i} className="results__change-item"><span className="results__change-arrow">→</span>{c}</div>
+                        <div key={i} className="results__change-item"><span className="results__change-arrow">&rarr;</span>{c}</div>
                       ))}
                     </div>
                   </div>
@@ -462,7 +545,7 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
           </div>
         )}
 
-        {/* ── SCHEMES ── */}
+        {/* SCHEMES */}
         {tab === "schemes" && (
           <div className="results__tab-content anim-fade-up">
             <div className="results__schemes-list">
@@ -492,17 +575,10 @@ export default function ResultsPage({ planData, farmData, farmImage, onBack, onR
         <button className="btn-secondary" onClick={onBack}>
           <IconRefresh size={15} stroke={2} /> New Plan
         </button>
-        <button className="btn-secondary" onClick={async () => {
-          if (saveStatus === 'saving') return;
-          setSaveStatus('saving');
-          try {
-            await savePlan(farmData, planData, language);
-            setSaveStatus('saved');
-          } catch { setSaveStatus('error'); }
-        }} disabled={saveStatus === 'saving'}>
-          {saveStatus === 'saving' ? <><IconLoader2 size={15} stroke={2} className="spin" /> Saving...</>
-           : saveStatus === 'saved' ? <><IconCheck size={15} stroke={2} /> Saved to Cloud</>
-           : <><IconCloudUpload size={15} stroke={2} /> Save to Cloud</>}
+        <button className="btn-secondary" onClick={handleShare}>
+          {shareCopied
+            ? <><IconCheck size={15} stroke={2} /> Link Copied!</>
+            : <><IconShare size={15} stroke={2} /> Share Link</>}
         </button>
         <button className="btn-primary" disabled={pdfGenerating} onClick={async () => {
           setPdfGenerating(true);

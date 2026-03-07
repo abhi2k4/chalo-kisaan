@@ -11,7 +11,7 @@ import VoiceInput from "../components/VoiceInput";
 import FieldMic from "../components/FieldMic";
 import Narrator from "../components/Narrator";
 import { useNarrator } from "../hooks/useNarrator";
-import { generatePlanStream, analyzeImage } from "../utils/api";
+import { generatePlanStream, analyzeImage, createReport } from "../utils/api";
 import "./PlannerPage.css";
 
 const SOIL_TYPES    = ["Red Soil","Black Cotton Soil","Alluvial Soil","Laterite Soil","Sandy Soil","Clay Soil"];
@@ -21,16 +21,41 @@ const BIODIVERSITY  = ["Mango Orchard","Sugarcane","Paddy / Rice","Wheat","Grape
 const LANGUAGES     = [{ key:"english", label:"EN" },{ key:"hindi", label:"हि" },{ key:"marathi", label:"म" },{ key:"punjabi", label:"ਪੰ" },{ key:"gujarati", label:"ગુ" }];
 const STEPS         = ["Farm Basics", "Resources & Budget", "Review & Generate"];
 
-export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
+/**
+ * Convert a blob URL to a base64 data URL.
+ */
+function blobUrlToBase64(blobUrl) {
+  return new Promise((resolve) => {
+    if (!blobUrl || !blobUrl.startsWith('blob:')) {
+      resolve(blobUrl || null);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxW = 800;
+      const scale = Math.min(1, maxW / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = () => resolve(null);
+    img.src = blobUrl;
+  });
+}
+
+export default function PlannerPage({ onBack, onComplete, onLanguageChange, language }) {
   const [form, setForm] = useState({
     landSize:"", location:"", soilType:"", waterSource:"",
-    existingInfrastructure:[], budget:"", biodiversity:"", language:"hindi",
+    existingInfrastructure:[], budget:"", biodiversity:"", language: language || "hindi",
   });
   const [showVoice,      setShowVoice]      = useState(false);
   const [imagePreview,   setImagePreview]   = useState(null);
   const [imageAnalysis,  setImageAnalysis]  = useState(null);
   const [isAnalyzingImg, setIsAnalyzingImg] = useState(false);
   const [isGenerating,   setIsGenerating]   = useState(false);
+  const [isSaving,       setIsSaving]       = useState(false);
   const [streamText,     setStreamText]     = useState("");
   const [error,          setError]          = useState(null);
   const [step,           setStep]           = useState(1);
@@ -100,13 +125,30 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
       (e) => { setError(e.message); setIsGenerating(false); }
     );
     setIsGenerating(false);
-    if (result) {
-      onComplete(result, form, imagePreview);
-    } else if (streamText) {
+
+    if (!result && streamText) {
       try {
         const m = streamText.match(/\{[\s\S]*\}/);
-        if (m) onComplete(JSON.parse(m[0]), form, imagePreview);
+        if (m) result = JSON.parse(m[0]);
       } catch {}
+    }
+
+    if (result) {
+      // Auto-save to S3
+      setIsSaving(true);
+      try {
+        const imageBase64 = await blobUrlToBase64(imagePreview);
+        const res = await createReport(form, result, form.language, imageBase64);
+        if (res.success && res.reportId) {
+          // Pass presigned URL will be fetched by ResultsPage; for same-session, pass base64
+          onComplete(res.reportId, result, form, imageBase64);
+        } else {
+          setError("Plan generated but failed to save. Please try again.");
+        }
+      } catch (err) {
+        setError(`Plan generated but save failed: ${err.message}`);
+      }
+      setIsSaving(false);
     }
   };
 
@@ -191,7 +233,7 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
           </div>
         )}
 
-        {/* ── STEP 1 ── */}
+        {/* STEP 1 */}
         {step === 1 && (
           <div className="anim-fade-up">
             <h2 className="planner__section-title">About Your Land</h2>
@@ -301,7 +343,7 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
           </div>
         )}
 
-        {/* ── STEP 2 ── */}
+        {/* STEP 2 */}
         {step === 2 && (
           <div className="anim-fade-up">
             <h2 className="planner__section-title">Resources &amp; Budget</h2>
@@ -369,7 +411,7 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
           </div>
         )}
 
-        {/* ── STEP 3 ── */}
+        {/* STEP 3 */}
         {step === 3 && (
           <div className="anim-fade-up">
             <h2 className="planner__section-title">Review &amp; Generate</h2>
@@ -399,7 +441,7 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
               </div>
             )}
 
-            {isGenerating && (
+            {(isGenerating || isSaving) && (
               <div className="planner__generating">
                 <div className="planner__gen-header">
                   <div className="planner__gen-dots">
@@ -407,9 +449,11 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
                       <div key={i} className="planner__gen-dot" style={{ animationDelay:`${i*0.15}s` }} />
                     ))}
                   </div>
-                  AI is crafting your personalised agritourism plan…
+                  {isSaving
+                    ? "Saving your report..."
+                    : "AI is crafting your personalised agritourism plan\u2026"}
                 </div>
-                {streamText && (
+                {streamText && !isSaving && (
                   <div className="planner__stream-box">
                     {streamText.slice(-280)}
                     <span className="planner__stream-cursor">▌</span>
@@ -422,9 +466,9 @@ export default function PlannerPage({ onBack, onComplete, onLanguageChange }) {
               <button className="btn-secondary planner__back-step-btn" onClick={() => setStep(2)}>
                 <IconArrowLeft size={15} stroke={2} /> Back
               </button>
-              <button className="planner__generate-btn" onClick={handleGenerate} disabled={isGenerating}>
-                {isGenerating ? (
-                  <><IconLoader2 size={16} stroke={2} className="spin" /> Generating…</>
+              <button className="planner__generate-btn" onClick={handleGenerate} disabled={isGenerating || isSaving}>
+                {isGenerating || isSaving ? (
+                  <><IconLoader2 size={16} stroke={2} className="spin" /> {isSaving ? "Saving…" : "Generating…"}</>
                 ) : (
                   <>
                     <IconRobot size={16} stroke={1.8} /> Generate My Plan

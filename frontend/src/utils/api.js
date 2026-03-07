@@ -2,8 +2,6 @@ const API_BASE = process.env.REACT_APP_API_URL || '/api';
 
 /**
  * Parse error body from FastAPI responses.
- * FastAPI returns {"detail": "..."} for HTTPException,
- * but custom handlers may return {"error": "..."}.
  */
 function parseErrorMessage(errBody, fallback) {
   return errBody?.detail || errBody?.error || errBody?.message || fallback;
@@ -93,21 +91,6 @@ export async function parseVoiceTranscript(transcript, language = 'hindi') {
   return response.json();
 }
 
-export async function savePlan(farmData, planData, language = 'hindi') {
-  const response = await fetch(`${API_BASE}/save-plan`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ farmData, planData, language }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(parseErrorMessage(err, 'Save failed'));
-  }
-
-  return response.json();
-}
-
 export async function visualizeLand(imageBase64, services, farmData, mode = 'transform', planSummary = '') {
   const response = await fetch(`${API_BASE}/visualize-land`, {
     method: 'POST',
@@ -118,6 +101,66 @@ export async function visualizeLand(imageBase64, services, farmData, mode = 'tra
   if (!response.ok) {
     const err = await response.json();
     throw new Error(parseErrorMessage(err, 'Land visualization failed'));
+  }
+
+  return response.json();
+}
+
+// ── Report API (new) ──────────────────────────────────────────
+
+export async function createReport(farmData, planData, language, farmImageBase64 = null) {
+  const response = await fetch(`${API_BASE}/reports`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ farmData, planData, language, farmImageBase64 }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Failed to save report'));
+  }
+
+  return response.json();
+}
+
+export async function getReport(reportId) {
+  const response = await fetch(`${API_BASE}/reports/${reportId}`);
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Report not found'));
+  }
+
+  return response.json();
+}
+
+export async function saveVisualization(reportId, imageBase64, services = [], mode = 'transform') {
+  const response = await fetch(`${API_BASE}/reports/${reportId}/visualizations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageBase64, services, mode }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Failed to save visualization'));
+  }
+
+  return response.json();
+}
+
+// ── Legacy (kept for backwards compat) ────────────────────────
+
+export async function savePlan(farmData, planData, language = 'hindi') {
+  const response = await fetch(`${API_BASE}/save-plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ farmData, planData, language }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(parseErrorMessage(err, 'Save failed'));
   }
 
   return response.json();
