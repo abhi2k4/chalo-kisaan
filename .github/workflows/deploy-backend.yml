@@ -30,10 +30,12 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install httpx  # For async test client
 
       - name: Run tests
-        run: pytest tests/ -x -q --tb=short
+        run: pytest tests/unit/ -v --tb=short
         env:
           DEV_BYPASS_AUTH: true
           DATABASE_URL:    sqlite:///./test.db

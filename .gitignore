@@ -49,5 +49,3 @@ aws-credentials.json
 .claude/
 /.claude
 /infra
-
-package-lock.json
