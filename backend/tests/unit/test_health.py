@@ -23,10 +23,13 @@ def test_health_endpoint():
     assert data["status"] == "ok"
 
 
-def test_root_endpoint():
-    """Test that root endpoint returns API info"""
-    response = client.get("/")
+def test_health_endpoint_has_version():
+    """Test that health endpoint returns version info"""
+    response = client.get("/api/health")
     assert response.status_code == 200
+    data = response.json()
+    assert "version" in data
+    assert "region" in data
 
 
 def test_cors_headers():
