@@ -29,8 +29,8 @@ jobs:
         working-directory: frontend
         run: npm run build
         env:
-          # Relative /api path — Amplify rewrites /api/* → ALB server-side (no mixed-content)
-          REACT_APP_API_URL: "/api"
+          # Direct HTTPS backend — api.chalokisaan.in (no mixed-content, no proxy needed)
+          REACT_APP_API_URL: "https://api.chalokisaan.in/api"
           REACT_APP_DEV_BYPASS_AUTH: "false"
 
       - name: Configure AWS credentials
