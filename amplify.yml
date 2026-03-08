@@ -17,25 +17,27 @@ frontend:
     paths:
       - frontend/node_modules/**/*
 
-customHeaders:
-  - pattern: '**/*'
-    headers:
-      - key: Strict-Transport-Security
-        value: max-age=31536000; includeSubDomains
-      - key: X-Content-Type-Options
-        value: nosniff
-      - key: X-Frame-Options
-        value: DENY
-      - key: Cache-Control
-        value: no-store
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: Strict-Transport-Security
+          value: max-age=31536000; includeSubDomains
+        - key: X-Content-Type-Options
+          value: nosniff
+        - key: X-Frame-Options
+          value: DENY
+        - key: Cache-Control
+          value: no-store
 
-rewrites:
-  - source: '/api/<*>'
-    target: 'https://api.chalokisaan.in/api/<*>'
-    status: '200'
-    condition: null
-  - source: '</^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
-    target: '/index.html'
-    status: '200'
-    condition: null
+  rewrites:
+    # Proxy /api/* → backend on api.chalokisaan.in (HTTPS, no mixed-content)
+    - source:    '/api/<*>'
+      target:    'https://api.chalokisaan.in/api/<*>'
+      status:    '200'
+      condition: null
+    # SPA fallback — serve index.html for all non-asset paths
+    - source:    '</^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
+      target:    '/index.html'
+      status:    '200'
+      condition: null
 
