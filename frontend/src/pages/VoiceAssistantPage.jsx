@@ -325,9 +325,17 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
       },
       /* onComplete */ () => {},
       /* onError */ (err) => {
+        const errText = err?.message || '';
+        const errorMsg = {
+          hindi:    `माफ़ करें, कुछ गड़बड़ हुई। कृपया दोबारा पूछें।${errText ? ` (${errText})` : ''}`,
+          english:  `Sorry, something went wrong. Please try again.${errText ? ` (${errText})` : ''}`,
+          marathi:  `माफ करा, काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा.`,
+          punjabi:  `ਮਾਫ਼ ਕਰਨਾ, ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।`,
+          gujarati: `માફ કરશો, કંઈક ખોટું થયું. કૃપા કરીને ફરી પ્રયાસ કરો.`,
+        };
         setMsgs(prev => prev.map(m =>
           m.id === aiMsgId
-            ? { ...m, text: err?.message || 'कुछ गड़बड़ हो गई। कृपया दोबारा पूछें।', streaming: false, error: true }
+            ? { ...m, text: errorMsg[lang] || errorMsg.english, streaming: false, error: true }
             : m
         ));
         setPhase('idle');
@@ -337,8 +345,15 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
     );
 
     /* Finalise bubble */
+    const noResponseText = {
+      hindi:    'कोई उत्तर नहीं मिला। कृपया पुनः प्रयास करें।',
+      english:  'No response received. Please try again.',
+      marathi:  'कोणताही प्रतिसाद नाही. कृपया पुन्हा प्रयत्न करा.',
+      punjabi:  'ਕੋਈ ਜਵਾਬ ਨਹੀਂ ਮਿਲਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      gujarati: 'કોઈ પ્રતિસાદ મળ્યો નથી. કૃપા કરીને ફરી પ્રયાસ કરો.',
+    };
     setMsgs(prev => prev.map(m =>
-      m.id === aiMsgId ? { ...m, text: fullText || 'No response.', streaming: false } : m
+      m.id === aiMsgId ? { ...m, text: fullText || noResponseText[lang] || noResponseText.english, streaming: false, error: !fullText } : m
     ));
 
     setPhase('idle');

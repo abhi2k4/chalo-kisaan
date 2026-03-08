@@ -164,7 +164,7 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
             onClick={() => setShowAiVision(v => !v)}
           >
             <IconSparkles size={13} strokeWidth={2.5} />
-            AI Generated Vision
+            {t('myl_ai_vision')}
           </button>
 
           {/* Nav */}
@@ -178,9 +178,9 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
 
         {/* Title + Toggle */}
         <div className="plan__hero-footer">
-          <h1 className="plan__title">{biz.name || 'Your AI Farm Plan'}</h1>
+          <h1 className="plan__title">{biz.name || t('myl_plan_title')}</h1>
           <div className="plan__vision-toggle">
-            <span className="plan__toggle-label">Original Land</span>
+            <span className="plan__toggle-label">{t('myl_original_land') || 'Original Land'}</span>
             <button
               className="plan__toggle-btn"
               onClick={() => setShowAiVision(v => !v)}
@@ -191,7 +191,7 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
               </div>
             </button>
             <span className={`plan__toggle-label${showAiVision ? ' plan__toggle-label--active' : ''}`}>
-              AI Vision
+              {t('myl_ai_vision')}
               {vizLoading && <IconLoader2 size={12} className="spin" style={{ marginLeft: 4 }} />}
             </span>
           </div>
@@ -206,9 +206,9 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
           <div className="plan__section-header">
             <h2 className="plan__section-title">
               <IconChecklist size={18} strokeWidth={2} color="var(--g-600)" />
-              {t('myl_setup_roadmap')}
+              {t('myl_setup_roadmap') || 'Setup Roadmap'}
             </h2>
-            <span className="plan__section-badge">{steps.length || 3} {t('sp_steps') || 'Steps'}</span>
+            <span className="plan__section-badge">{steps.length || 3} {t('myl_steps') || 'Steps'}</span>
           </div>
 
           {steps.length > 0 ? steps.map((step, i) => (
@@ -237,7 +237,7 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
           <div className="plan__cost-card">
             <div className="plan__cost-header">
               <div>
-                <div className="plan__cost-label">{t('myl_total_cost')}</div>
+                <div className="plan__cost-label">{t('myl_setup_cost_label') || t('myl_setup_cost')}</div>
                 <div className="plan__cost-total">{fmt(totalCost)}</div>
               </div>
               <div className="plan__cost-icon">
@@ -245,13 +245,13 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
               </div>
             </div>
             <CostBar
-              label={t('myl_materials')}
+              label="Materials (Bamboo/Canvas)"
               amount={materials}
               max={totalCost}
               color="var(--saffron)"
             />
             <CostBar
-              label={t('myl_labor')}
+              label="Labor &amp; Permits"
               amount={labor}
               max={totalCost}
               color="var(--g-700)"
@@ -264,11 +264,11 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
           <div className="plan__income-card">
             <div className="plan__income-header">
               <div>
-                <div className="plan__income-label">{t('myl_monthly_income')}</div>
+                <div className="plan__income-label">{t('myl_proj_monthly')}</div>
                 <div className="plan__income-value">
                   {fmt(monthlyIncome)}
                   <span className="plan__income-badge">
-                    +{vsAvg}% {t('myl_vs_avg')}
+                    +{vsAvg}% vs avg
                   </span>
                 </div>
               </div>
@@ -283,18 +283,18 @@ export default function AiFarmPlanPage({ planData, farmData, farmImage, onBack }
         {/* ── Verified Footer ── */}
         <div className="plan__verified">
           <IconShield size={14} strokeWidth={2} color="var(--g-600)" />
-          {t('myl_ai_verified')}
+          {t('myl_verified') || 'AI Plan Verified by Agri-Experts'}
         </div>
 
         {/* ── Action Buttons ── */}
         <div className="plan__actions">
           <button className="plan__action-btn plan__action-btn--outline">
             <IconDownload size={18} strokeWidth={2} />
-            Download Plan
+            {t('myl_download') || 'Download Plan'}
           </button>
           <button className="plan__action-btn plan__action-btn--solid">
             <IconBuildingStore size={18} strokeWidth={2} />
-            Connect to Vendors
+            {t('myl_connect_vendors') || 'Connect to Vendors'}
           </button>
         </div>
 

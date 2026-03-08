@@ -3,8 +3,9 @@ frontend:
   phases:
     preBuild:
       commands:
+        - nvm use 22
         - cd frontend
-        - npm ci
+        - npm install
     build:
       commands:
         # REACT_APP_API_URL is empty → relative /api calls, proxied by Amplify rewrite below

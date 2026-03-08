@@ -48,4 +48,3 @@ coverage/
 aws-credentials.json
 .claude/
 /.claude
-/infra
