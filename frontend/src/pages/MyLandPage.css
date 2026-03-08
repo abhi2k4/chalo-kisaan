@@ -956,12 +956,12 @@
   }
 
   .myl__body {
-    padding: var(--sp-7) var(--sp-8) var(--sp-8);
+    padding: 40px 48px 48px;
     max-width: 100%;
   }
 
   .myl__section {
-    margin-bottom: var(--sp-6);
+    margin-bottom: 28px;
   }
 
   .myl__photo-preview {

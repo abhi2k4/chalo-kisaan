@@ -185,6 +185,16 @@ const t = {
   common_close:       { hindi: 'बंद करें', english: 'Close', marathi: 'बंद करा', punjabi: 'ਬੰਦ ਕਰੋ', gujarati: 'Close' },
   common_alerts_soon: { hindi: 'बुकिंग अनुरोध और अलर्ट जल्द आ रहे हैं।', english: 'Booking requests and alerts coming soon.', marathi: 'बुकिंग विनंत्या आणि अलर्ट लवकरच येत आहेत.', punjabi: 'ਬੁਕਿੰਗ ਬੇਨਤੀਆਂ ਅਤੇ ਅਲਰਟ ਜਲਦੀ ਆ ਰਹੇ ਹਨ।', gujarati: 'Booking requests coming soon.' },
   common_alerts:      { hindi: 'अलर्ट', english: 'Alerts', marathi: 'अलर्ट', punjabi: 'ਅਲਰਟ', gujarati: 'Alerts' },
+  
+  // ── Cost Breakdown ────────────────────────────────────────────────────
+  myl_cost_breakdown:  { hindi: 'लागत विवरण', english: 'Cost Breakdown', marathi: 'खर्च तपशील', punjabi: 'ਲਾਗਤ ਵੇਰਵਾ', gujarati: 'Cost Breakdown' },
+  myl_total_cost:      { hindi: 'कुल लागत', english: 'Total Cost', marathi: 'एकूण खर्च', punjabi: 'ਕੁੱਲ ਲਾਗਤ', gujarati: 'Total Cost' },
+  myl_materials:       { hindi: 'सामग्री', english: 'Materials', marathi: 'सामग्री', punjabi: 'ਸਮੱਗਰੀ', gujarati: 'Materials' },
+  myl_labor:           { hindi: 'श्रम', english: 'Labor', marathi: 'श्रम', punjabi: 'ਮਜ਼ਦੂਰੀ', gujarati: 'Labor' },
+  
+  // ── Plan Actions ──────────────────────────────────────────────────────
+  myl_edit_regen:      { hindi: 'पुनः उत्पन्न करें', english: 'Regenerate', marathi: 'पुन्हा तयार करा', punjabi: 'ਮੁੜ ਬਣਾਓ', gujarati: 'Regenerate' },
+  myl_saved_ok:        { hindi: 'AI सत्यापित', english: 'AI Verified', marathi: 'AI सत्यापित', punjabi: 'AI ਪ੍ਰਮਾਣਿਤ', gujarati: 'AI Verified' },
 };
 
 /**

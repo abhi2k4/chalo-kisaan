@@ -215,6 +215,62 @@
   text-overflow: ellipsis;
 }
 
+/* ── Error banner ── */
+.va__error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: var(--sp-1) var(--page-px, 16px) 0;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-md);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  font-size: 11px;
+  color: #991b1b;
+  font-weight: 600;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── Network unavailable banner ── */
+.va__network-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin: var(--sp-2) var(--page-px, 16px) 0;
+  padding: var(--sp-3) var(--sp-3);
+  border-radius: var(--r-md);
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  flex-shrink: 0;
+  animation: slideDown 0.3s var(--ease-out);
+}
+
+.va__network-banner-icon {
+  color: #92400e;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.va__network-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.va__network-banner-text strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #78350f;
+}
+
+.va__network-banner-text span {
+  color: #92400e;
+  font-weight: 500;
+}
+
 /* ── Status pill ─────────────────────────────────────────────────────────── */
 .va__status-row {
   display: flex;
@@ -696,6 +752,17 @@
 .va__mic-row {
   display: flex;
   justify-content: center;
+}
+
+.va__mic-unavailable {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 72px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-4);
+  letter-spacing: 0.02em;
 }
 
 /* ── Hero Mic button — matches BottomNav hero style ─────────────────────── */

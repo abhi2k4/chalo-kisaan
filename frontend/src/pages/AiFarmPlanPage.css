@@ -517,11 +517,16 @@
   .plan__hero-img-wrap { height: 400px; }
 
   .plan__content {
-    padding: 32px 48px 0;
+    padding: 40px 56px 0;
   }
 
   .plan__section {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+  }
+
+  .plan__step-card {
+    padding: 20px;
+    margin-bottom: 16px;
   }
 
   .plan__bottom-pad { height: 32px; }

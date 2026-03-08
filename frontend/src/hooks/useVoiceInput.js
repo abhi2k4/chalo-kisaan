@@ -12,9 +12,11 @@ const SUPPORTED_LANGS = {
 };
 
 // Errors that are transient — worth retrying automatically
-const RETRYABLE_ERRORS = new Set(['network', 'service-not-allowed', 'aborted']);
-const MAX_RETRIES = 4;
-const RETRY_DELAY_MS = 800;
+// NOTE: 'network' removed — on HTTPS localhost the Google speech service
+// is unreachable; retrying endlessly just spams the console.
+const RETRYABLE_ERRORS = new Set(['service-not-allowed', 'aborted']);
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
 
 export function useVoiceInput(language = 'english') {
   const [isListening,       setIsListening]       = useState(false);
@@ -22,6 +24,8 @@ export function useVoiceInput(language = 'english') {
   const [interimTranscript, setInterimTranscript] = useState('');
   const [error,             setError]             = useState(null);
   const [isSupported,       setIsSupported]       = useState(false);
+  // true when the Google speech network endpoint is unreachable (HTTPS/network issue)
+  const [networkUnavailable, setNetworkUnavailable] = useState(false);
 
   const recognitionRef  = useRef(null);
   const shouldRunRef    = useRef(false);   // true while user wants recording ON
@@ -74,8 +78,22 @@ export function useVoiceInput(language = 'english') {
     rec.onerror = (event) => {
       const errCode = event.error;
 
+      // 'network' = Google speech servers unreachable (common on HTTPS localhost
+      // or when the device has no access to Google APIs). Stop immediately —
+      // retrying will never help and just floods the console.
+      if (errCode === 'network') {
+        console.warn('[VoiceInput] Network error: Google Speech API unreachable. Switch to text input.');
+        setNetworkUnavailable(true);
+        setError('network');
+        setIsListening(false);
+        shouldRunRef.current = false;
+        clearTimeout(retryTimerRef.current);
+        recognitionRef.current?.abort();
+        return;
+      }
+
       if (shouldRunRef.current && RETRYABLE_ERRORS.has(errCode) && retryCountRef.current < MAX_RETRIES) {
-        // Transient error — schedule a retry instead of surfacing to the user
+        console.log(`[VoiceInput] Retrying (attempt ${retryCountRef.current + 1}/${MAX_RETRIES})...`);
         retryCountRef.current += 1;
         clearTimeout(retryTimerRef.current);
         retryTimerRef.current = setTimeout(() => {
@@ -84,9 +102,9 @@ export function useVoiceInput(language = 'english') {
             recognitionRef.current = buildRecognition();
             recognitionRef.current?.start();
           } catch { /* ignore */ }
-        }, RETRY_DELAY_MS * retryCountRef.current); // back-off: 800ms, 1600ms, 2400ms…
+        }, RETRY_DELAY_MS * retryCountRef.current);
       } else {
-        // Non-retryable or exhausted retries
+        console.error('[VoiceInput] Speech recognition failed:', errCode);
         setError(errCode);
         setIsListening(false);
         shouldRunRef.current = false;
@@ -125,9 +143,15 @@ export function useVoiceInput(language = 'english') {
   }, []);
 
   const startListening = useCallback(() => {
+    if (!SpeechRecognition) {
+      console.error('[VoiceInput] SpeechRecognition not available');
+      return;
+    }
+    console.log('[VoiceInput] Starting listening in language:', langRef.current);
     setTranscript('');
     setInterimTranscript('');
     setError(null);
+    setNetworkUnavailable(false);
     retryCountRef.current  = 0;
     shouldRunRef.current   = true;
 
@@ -135,8 +159,11 @@ export function useVoiceInput(language = 'english') {
     recognitionRef.current = buildRecognition();
     try {
       recognitionRef.current?.start();
-    } catch { /* already started */ }
-  }, [buildRecognition]);
+      console.log('[VoiceInput] Recognition started successfully');
+    } catch (err) {
+      console.error('[VoiceInput] Error starting recognition:', err);
+    }
+  }, [buildRecognition, SpeechRecognition]);
 
   const stopListening = useCallback(() => {
     shouldRunRef.current = false;
@@ -156,6 +183,7 @@ export function useVoiceInput(language = 'english') {
     interimTranscript,
     error,
     isSupported,
+    networkUnavailable,
     startListening,
     stopListening,
     resetTranscript,

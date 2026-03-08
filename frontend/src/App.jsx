@@ -107,6 +107,7 @@ function AppInner() {
       {page === 'home' && (
         <HomePage
           planData={planData}
+          farmImage={farmImage}
           onGoToMyLand={() => setPage('my-land')}
           onSpeakToAI={() => setPage('assistant')}
           onViewDetails={() => setPage('my-land')}

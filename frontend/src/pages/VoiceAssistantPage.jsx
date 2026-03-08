@@ -20,7 +20,7 @@ import {
   IconArrowLeft, IconMicrophone,
   IconSend, IconX, IconVolume, IconVolumeOff,
   IconLoader2, IconSparkles, IconRefresh,
-  IconLeaf, IconInfoCircle, IconCheck, IconMapPin,
+  IconLeaf, IconInfoCircle, IconCheck, IconMapPin, IconAlertTriangle,
 } from '@tabler/icons-react';
 import { useVoiceInput }   from '../hooks/useVoiceInput';
 import { useAuth }         from '../context/AuthContext';
@@ -200,8 +200,19 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
   /* Voice hook (browser Web Speech API) */
   const {
     isListening, transcript, interimTranscript,
-    isSupported, startListening, stopListening, resetTranscript,
+    isSupported, startListening, stopListening, resetTranscript, error, networkUnavailable,
   } = useVoiceInput(lang);
+
+  /* ── Auto-switch to text input on network error ──────────────────────────── */
+  useEffect(() => {
+    if (networkUnavailable) {
+      setPhase('idle');
+      // Focus the text input automatically
+      setTimeout(() => {
+        document.querySelector('.va__text-input')?.focus();
+      }, 100);
+    }
+  }, [networkUnavailable]);
 
   /* ── Auto-scroll ───────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -527,6 +538,39 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
         </div>
       )}
 
+      {/* ── Error banner (shows when voice recognition fails) ── */}
+      {error && !networkUnavailable && (
+        <div className="va__error-banner">
+          <IconAlertTriangle size={14} strokeWidth={2} />
+          <span>
+            {error === 'not-allowed'
+              ? lang === 'hindi' ? 'माइक की अनुमति देना भूल गए? ब्राउज़र सेटिंग्स में जांचें।' : 'Microphone permission denied. Check browser settings.'
+              : error === 'service-not-allowed'
+              ? lang === 'hindi' ? 'वॉयस सेवा अभी उपलब्ध नहीं है।' : 'Voice service unavailable. Try again later.'
+              : lang === 'hindi' ? `त्रुटि: ${error}` : `Error: ${error}`}
+          </span>
+        </div>
+      )}
+
+      {/* ── Network unavailable banner — voice fallback to text ── */}
+      {networkUnavailable && (
+        <div className="va__network-banner">
+          <div className="va__network-banner-icon">
+            <IconAlertTriangle size={15} strokeWidth={2} />
+          </div>
+          <div className="va__network-banner-text">
+            <strong>
+              {lang === 'hindi' ? 'वॉयस उपलब्ध नहीं' : 'Voice unavailable'}
+            </strong>
+            <span>
+              {lang === 'hindi'
+                ? 'Google Speech API इस नेटवर्क पर काम नहीं कर रही। नीचे टाइप करें।'
+                : 'Google Speech API is unreachable on this network. Type your question below.'}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* ── Status pill ── */}
       {phase !== 'idle' && (
         <div className="va__status-row">
@@ -611,8 +655,15 @@ export default function VoiceAssistantPage({ onBack, language: initLang, onRegis
 
         {/* Mic button row */}
         <div className="va__mic-row">
-          {/* Hero mic — same style as BottomNav hero tab */}
-          <PulseMic listening={isListening} onClick={handleMicToggle} />
+          {networkUnavailable ? (
+            <div className="va__mic-unavailable">
+              <span>
+                {lang === 'hindi' ? 'टाइप करके पूछें' : 'Type your question above'}
+              </span>
+            </div>
+          ) : (
+            <PulseMic listening={isListening} onClick={handleMicToggle} />
+          )}
         </div>
       </div>
     </div>

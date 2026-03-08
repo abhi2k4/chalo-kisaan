@@ -8,7 +8,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { authApi } from '../utils/api';
-import logoPrimary from '../assets/logo-primary.png';
+import kisaanPfp from '../assets/kisan-pfp.png';
 import './ProfilePage.css';
 
 const LANGUAGES = [
@@ -189,7 +189,7 @@ export default function ProfilePage({ onGoToSavedPlans, onGoToMyLand, onGoToOnbo
       {/* ── Hero ── */}
       <div className="profile__hero">
         <div className="profile__avatar-wrap">
-          <img src={logoPrimary} alt="avatar" className="profile__avatar" />
+          <img src={kisaanPfp} alt="avatar" className="profile__avatar" />
           <span className="profile__avatar-badge">
             <IconCheck size={12} strokeWidth={3} color="#fff" />
           </span>
@@ -242,13 +242,13 @@ export default function ProfilePage({ onGoToSavedPlans, onGoToMyLand, onGoToOnbo
               onClick={() => onGoToMyLand?.()}
             />
             <div className="profile__divider" />
-            <SettingsRow
+            {/* <SettingsRow
               icon={IconBuildingBank}
               iconBg="var(--saffron)"
               title={t('profile_bank')}
               subtitle={t('profile_bank_sub')}
               onClick={() => {}}
-            />
+            /> */}
           </div>
         </section>
 
