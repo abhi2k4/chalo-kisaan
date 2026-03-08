@@ -1,82 +1,113 @@
-/* Chalo Kisaan Service Worker v2.0 */
-const CACHE_NAME = 'chalo-kisaan-v2';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
+/* Chalo Kisaan Service Worker v3.0 */
+// Bump version on every deploy — forces activate to purge stale caches
+const CACHE_NAME = 'chalo-kisaan-v3';
+
+// Only pre-cache truly static files (no hashed JS/CSS bundles)
+const PRECACHE_ASSETS = [
   '/manifest.json',
   '/logo192.png',
   '/logo512.png',
   '/apple-touch-icon.png',
-  '/static/js/main.chunk.js',
-  '/static/js/bundle.js',
-  '/static/css/main.chunk.css',
 ];
 
-// Install: cache all static assets
+// Install: pre-cache only stable assets, skip waiting immediately
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Chalo Kisaan Service Worker');
+  console.log('[SW] Installing Chalo Kisaan Service Worker v3');
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        // Don't fail install if some assets aren't available yet
-        console.log('[SW] Some assets not cached:', err);
-      });
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      cache.addAll(PRECACHE_ASSETS).catch((err) => {
+        console.log('[SW] Pre-cache partial failure (non-fatal):', err);
+      })
+    )
   );
 });
 
-// Activate: clean old caches
+// Activate: delete ALL old caches, claim all clients immediately
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Chalo Kisaan Service Worker');
+  console.log('[SW] Activating Chalo Kisaan Service Worker v3 — purging old caches');
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((key) => {
+        console.log('[SW] Deleting old cache:', key);
+        return caches.delete(key);
+      })))
+      .then(() => self.clients.claim())
+      .then(() => {
+        // Tell all open tabs to reload so they pick up the new bundle
+        return self.clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) => client.navigate(client.url));
+        });
+      })
   );
 });
 
-// Fetch: network-first for API, cache-first for static assets
+// Fetch strategy:
+//   • index.html (navigation)  → network-first, NO cache storage (always fresh)
+//   • /static/js|css/*         → network-first (hashed filenames; cache after fetch)
+//   • images / fonts / icons   → cache-first (immutable)
+//   • API / ALB calls          → network-only
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET and chrome-extension requests
-  if (request.method !== 'GET' || url.protocol === 'chrome-extension:') return;
+  // Skip non-GET and non-http(s) requests
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
-  // API calls: network only (don't cache)
-  if (url.pathname.startsWith('/api/') || url.hostname.includes('api.chalokisaan')) {
-    event.respondWith(fetch(request).catch(() =>
-      new Response(JSON.stringify({ error: 'Offline - please check your connection' }), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 503,
-      })
-    ));
+  // ── API calls: network-only, never cache ──────────────────────────────
+  const isApi = url.pathname.startsWith('/api/') ||
+                url.hostname.includes('elb.amazonaws.com') ||
+                url.hostname.includes('execute-api');
+  if (isApi) {
+    event.respondWith(
+      fetch(request).catch(() =>
+        new Response(JSON.stringify({ error: 'Offline — please check your connection' }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 503,
+        })
+      )
+    );
     return;
   }
 
-  // Static assets: cache-first, fallback to network
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
+  // ── HTML navigation (index.html): network-first, NEVER cache ─────────
+  if (request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(
+      fetch(request).catch(() =>
+        // Only fall back to cached index.html when truly offline
+        caches.match('/index.html').then((cached) =>
+          cached || new Response('Offline', { status: 503 })
+        )
+      )
+    );
+    return;
+  }
 
-      return fetch(request).then((response) => {
-        // Only cache successful responses for same-origin or fonts
-        if (
-          response.status === 200 &&
-          (url.origin === self.location.origin || url.hostname.includes('fonts.g'))
-        ) {
+  // ── Hashed JS/CSS bundles: network-first, then cache ─────────────────
+  const isHashedAsset = /\/static\/(js|css)\//.test(url.pathname);
+  if (isHashedAsset) {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
-      }).catch(() => {
-        // Offline fallback for navigation requests
-        if (request.mode === 'navigate') {
-          return caches.match('/index.html');
+      }).catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // ── Static images / icons / fonts: cache-first ───────────────────────
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((response) => {
+        if (response.status === 200 && url.origin === self.location.origin) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
+        return response;
       });
     })
   );
