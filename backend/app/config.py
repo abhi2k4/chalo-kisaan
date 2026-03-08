@@ -82,9 +82,10 @@ class Settings(BaseSettings):
         "https://localhost:3443,"
         "https://6ddkdsh6-8000.inc1.devtunnels.ms,"
         "https://6ddkdsh6-3443.inc1.devtunnels.ms,"
-        "https://master.d29avtsde3xnn7.amplifyapp.com,"  # Amplify preview
-        "https://chalokisaan.in,"            # production — replace with real domain
-        "https://www.chalokisaan.in"          # production www — replace with real domain
+        "https://master.d29avtsde3xnn7.amplifyapp.com,"  # Amplify preview URL
+        "https://chalokisaan.in,"                         # production domain
+        "https://www.chalokisaan.in,"                     # production www
+        "http://chalokisaan-alb-229245969.ap-south-1.elb.amazonaws.com"  # ALB (for health checks / direct access)
     )
 
     # -- Logging --

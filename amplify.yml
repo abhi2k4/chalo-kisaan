@@ -8,9 +8,9 @@ frontend:
         - npm install
     build:
       commands:
-        # REACT_APP_API_URL is intentionally EMPTY — all /api/* calls are relative
-        # to the same origin (chalokisaan.in). Amplify rewrites /api/* → ALB below.
-        - REACT_APP_API_URL="" REACT_APP_DEV_BYPASS_AUTH=false npm run build
+        # Point the React app directly at the ALB backend URL.
+        # The ALB serves the FastAPI backend on port 80 at /api/*.
+        - REACT_APP_API_URL="http://chalokisaan-alb-229245969.ap-south-1.elb.amazonaws.com/api" REACT_APP_DEV_BYPASS_AUTH=false npm run build
   artifacts:
     baseDirectory: frontend/build
     files:
