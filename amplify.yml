@@ -8,8 +8,6 @@ frontend:
         - npm install
     build:
       commands:
-        # REACT_APP_API_URL is intentionally EMPTY — all /api/* calls are relative
-        # to the same origin (chalokisaan.in). Amplify rewrites /api/* → ALB below.
         - REACT_APP_API_URL="" REACT_APP_DEV_BYPASS_AUTH=false npm run build
   artifacts:
     baseDirectory: frontend/build
@@ -32,17 +30,12 @@ frontend:
           value: no-store
 
   rewrites:
-    # ── 1. API proxy ───────────────────────────────────────────────────────────
-    # All /api/* requests on chalokisaan.in are forwarded to the ALB → ECS backend.
-    # This makes chalokisaan.in/api the production backend endpoint.
-    # The ALB is HTTP-only internally; Amplify terminates HTTPS at the edge.
+    # Proxy /api/* → ALB backend (HTTP internally, Amplify edge terminates HTTPS)
     - source:    '/api/<*>'
       target:    'http://chalokisaan-alb-229245969.ap-south-1.elb.amazonaws.com/api/<*>'
       status:    '200'
       condition: null
-
-    # ── 2. SPA fallback ────────────────────────────────────────────────────────
-    # All non-asset paths serve index.html so React Router handles client-side nav.
+    # SPA fallback — all non-asset paths serve index.html
     - source:    '</^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
       target:    '/index.html'
       status:    '200'
