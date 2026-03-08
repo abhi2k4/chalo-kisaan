@@ -8,9 +8,9 @@ frontend:
         - npm install
     build:
       commands:
-        # Point the React app directly at the ALB backend URL.
-        # The ALB serves the FastAPI backend on port 80 at /api/*.
-        - REACT_APP_API_URL="http://chalokisaan-alb-229245969.ap-south-1.elb.amazonaws.com/api" REACT_APP_DEV_BYPASS_AUTH=false npm run build
+        # Use relative /api path — Amplify rewrites /api/* → ALB internally.
+        # This eliminates the mixed-content error (no direct HTTP ALB calls from browser).
+        - REACT_APP_API_URL="/api" REACT_APP_DEV_BYPASS_AUTH=false npm run build
   artifacts:
     baseDirectory: frontend/build
     files:
