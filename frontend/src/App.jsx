@@ -20,7 +20,7 @@ const NAV_PAGES = ['home', 'my-land', 'assistant', 'requests', 'profile'];
 
 function AppInner() {
   // ⚠️ ALL HOOKS MUST BE CALLED AT THE TOP, BEFORE ANY CONDITIONAL LOGIC
-  const { isLoggedIn, profile } = useAuth();
+  const { isLoggedIn, profile, isGuest } = useAuth();
   const { language, setLanguage } = useLanguage();
   const [planData,  setPlanData]  = useLocalStorage('ck_planData', null);
   const [farmData,  setFarmData]  = useLocalStorage('ck_farmData', null);
@@ -45,8 +45,8 @@ function AppInner() {
     return <LandingPage onStart={() => setShowLoginGate(true)} language={language} />;
   }
 
-  // Show onboarding if profile has no name yet (first-time user)
-  const needsOnboarding = !onboardingDone && (!profile?.given_name);
+  // Show onboarding if profile has no name yet (first-time user) — guests skip this
+  const needsOnboarding = !onboardingDone && !isGuest && (!profile?.given_name);
   if (needsOnboarding) {
     return <OnboardingPage onComplete={() => setOnboardingDone(true)} />;
   }

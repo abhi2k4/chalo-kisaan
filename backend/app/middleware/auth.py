@@ -36,15 +36,16 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-_bearer_scheme = HTTPBearer(auto_error=True)
+_bearer_scheme = HTTPBearer(auto_error=False)  # don't raise 403 on missing token
 
 
 @dataclass
 class AuthUser:
     """Populated by require_auth — available in every protected route."""
-    phone: str          # E.164 format: +91XXXXXXXXXX
-    sub:   str          # Cognito user sub (stable unique ID)
-    token: str          # Raw id_token (pass to downstream if needed)
+    phone: str          # E.164 format: +91XXXXXXXXXX  (or "guest" for anonymous users)
+    sub:   str          # Cognito user sub (stable unique ID; "guest" for anonymous)
+    token: str          # Raw id_token (pass to downstream if needed; "" for guests)
+    is_guest: bool = False  # True when user has not authenticated
 
 
 def _decode_jwt_payload(token: str) -> dict:
@@ -70,7 +71,23 @@ async def require_auth(
     """
     FastAPI dependency. Raises HTTP 401 on any auth failure.
     Returns AuthUser with verified phone + sub.
+    If DEV_BYPASS_AUTH is set, skips verification (dev only).
+    If ALLOW_GUEST_ACCESS is set, unauthenticated requests return a guest AuthUser.
     """
+    # ── Dev bypass ─────────────────────────────────────────────────────────
+    if settings.DEV_BYPASS_AUTH:
+        return AuthUser(phone="+919999999999", sub="dev-bypass-user", token="dev")
+
+    # ── Guest access (no token provided) ───────────────────────────────────
+    if not credentials:
+        if settings.ALLOW_GUEST_ACCESS:
+            return AuthUser(phone="guest", sub="guest", token="", is_guest=True)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required. Please log in.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     token = credentials.credentials
     creds_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -130,3 +147,18 @@ async def optional_auth(
         return await require_auth(credentials)
     except HTTPException:
         return None
+
+
+def deny_guest(user: AuthUser) -> AuthUser:
+    """
+    Call this at the start of routes that require a real account (e.g. save plan, get profile).
+    Raises HTTP 403 if the user is a guest (unauthenticated).
+    Usage:
+        user = deny_guest(user)
+    """
+    if user.is_guest:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Please sign in or create an account to use this feature.",
+        )
+    return user

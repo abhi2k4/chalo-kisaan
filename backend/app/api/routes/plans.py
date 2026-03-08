@@ -20,7 +20,7 @@ from fastapi.responses import StreamingResponse
 
 from app.schemas.schemas import FarmDataIn
 from app.services import bedrock
-from app.middleware.auth import AuthUser, require_auth
+from app.middleware.auth import AuthUser, require_auth, deny_guest
 from app.utils.dynamo import log_event, save_plan, get_plans_for_user, delete_plan
 
 logger = logging.getLogger(__name__)
@@ -157,12 +157,15 @@ async def generate_plan(req: FarmDataIn, user: AuthUser = Depends(require_auth))
             })
 
             # Persist plan to DynamoDB for the user's "Saved Plans" history
-            plan_id = save_plan(
-                user_id=user.sub,
-                farm_data=farm_dict,
-                plan_data=plan_data,
-                language=language,
-            )
+            # Guests can generate plans but cannot save them to an account
+            plan_id = None
+            if not user.is_guest:
+                plan_id = save_plan(
+                    user_id=user.sub,
+                    farm_data=farm_dict,
+                    plan_data=plan_data,
+                    language=language,
+                )
             if plan_id:
                 plan_data["_planId"] = plan_id   # surface planId to frontend
 
@@ -188,6 +191,7 @@ async def list_plans(user: AuthUser = Depends(require_auth)):
     Return all saved plans for the authenticated user, newest first.
     GET /api/plans
     """
+    deny_guest(user)
     plans = get_plans_for_user(user.sub)
     return {"success": True, "plans": plans}
 
@@ -198,6 +202,7 @@ async def remove_plan(plan_id: str, user: AuthUser = Depends(require_auth)):
     Delete a specific saved plan for the authenticated user.
     DELETE /api/plans/{plan_id}
     """
+    deny_guest(user)
     ok = delete_plan(user_id=user.sub, plan_id=plan_id)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to delete plan.")

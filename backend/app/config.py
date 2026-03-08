@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     API_PORT: int = 8000
     API_DEBUG: bool = False
     DEV_BYPASS_AUTH: bool = False         # Set true in dev to skip JWT verification
+    ALLOW_GUEST_ACCESS: bool = True       # Allow unauthenticated (guest) users to call the API
 
     # -- AWS (IAM — for S3, Transcribe, Polly) --
     AWS_ACCESS_KEY_ID: str = ""

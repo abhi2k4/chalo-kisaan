@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   IconLock, IconLoader2, IconArrowRight,
   IconShieldCheck, IconEye, IconEyeOff, IconUserPlus, IconLogin,
-  IconArrowLeft,
+  IconArrowLeft, IconUser,
 } from '@tabler/icons-react';
 import logoPrimary from '../assets/logo-primary.png';
 import { authApi } from '../utils/api';
@@ -11,7 +11,7 @@ import { useLanguage } from '../context/LanguageContext';
 import './LoginPage.css';
 
 export default function LoginPage({ onBack }) {
-  const { login } = useAuth();
+  const { login, loginAsGuest } = useAuth();
   const { t } = useLanguage();
 
   // mode: 'login' | 'register'
@@ -117,6 +117,15 @@ export default function LoginPage({ onBack }) {
           >
             <IconUserPlus size={15} strokeWidth={2.5} /> {t('login_register')}
           </button>
+        </div>
+
+        {/* Guest access */}
+        <div className="login__guest-wrap">
+          <button className="login__guest-btn" type="button" onClick={loginAsGuest}>
+            <IconUser size={16} strokeWidth={2} />
+            Continue as Guest
+          </button>
+          <p className="login__guest-note">Explore the app without signing in</p>
         </div>
 
         {success && <div className="login__success">{success}</div>}

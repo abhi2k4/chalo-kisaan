@@ -327,3 +327,28 @@
     gap: var(--sp-4);
   }
 }
+
+/* ── Guest prompt ────────────────────────────────────────────────────────── */
+.sp__guest-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 32px 24px;
+  margin: 16px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 16px;
+  font-size: 15px;
+  color: #5d4037;
+}
+
+.sp__guest-prompt p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sp__guest-prompt .btn-primary {
+  min-width: 180px;
+}

@@ -18,6 +18,15 @@ const AuthContext = createContext(null);
 const STORAGE_KEY = 'ck_auth';
 const REFRESH_BUFFER_MS = 5 * 60 * 1000; // refresh 5 min before expiry
 
+const GUEST_AUTH = {
+  isGuest: true,
+  id_token: null,
+  access_token: null,
+  refresh_token: null,
+  phone: 'guest',
+  profile: { given_name: 'Guest', family_name: '', birthdate: '', address: '' },
+};
+
 function loadStoredAuth() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -49,6 +58,11 @@ export function AuthProvider({ children }) {
     // tokens = { id_token, access_token, refresh_token, expires_in, phone }
     const expiresAt = Date.now() + tokens.expires_in * 1000;
     setAuth({ ...tokens, expiresAt, profile: null }); // profile fetched after login
+  }, []);
+
+  const loginAsGuest = useCallback(() => {
+    clearTimeout(refreshTimerRef.current);
+    setAuth(GUEST_AUTH);
   }, []);
 
   // Silent token refresh
@@ -89,11 +103,13 @@ export function AuthProvider({ children }) {
 
   // Check dev bypass flag first
   const devBypass = process.env.REACT_APP_DEV_BYPASS_AUTH === 'true';
-  const isLoggedIn = devBypass || Boolean(auth?.id_token && auth?.expiresAt > Date.now());
+  const isGuest = Boolean(auth?.isGuest);
+  const isLoggedIn = devBypass || isGuest || Boolean(auth?.id_token && auth?.expiresAt > Date.now());
 
   // Fetch full profile from Cognito whenever we have a valid token but no profile yet
+  // (guests already have a profile object, skip for them)
   useEffect(() => {
-    if (!auth?.id_token || auth?.profile) return;
+    if (!auth?.id_token || auth?.profile || auth?.isGuest) return;
     const headers = { Authorization: `Bearer ${auth.id_token}` };
     authApi.getProfile(headers)
       .then(profile => {
@@ -112,7 +128,7 @@ export function AuthProvider({ children }) {
   }, [auth?.id_token]);
 
   return (
-    <AuthContext.Provider value={{ auth, isLoggedIn, login, logout, authHeader, setProfile, user: auth, profile: auth?.profile || null }}>
+    <AuthContext.Provider value={{ auth, isLoggedIn, isGuest, login, loginAsGuest, logout, authHeader, setProfile, user: auth, profile: auth?.profile || null }}>
       {children}
     </AuthContext.Provider>
   );

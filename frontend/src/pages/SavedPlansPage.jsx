@@ -93,7 +93,7 @@ function PlanCard({ plan, onView, onDelete, deleting, t }) {
 
 /* ── main page ── */
 export default function SavedPlansPage({ onBack, onLoadPlan }) {
-  const { authHeader } = useAuth();
+  const { authHeader, isGuest, logout } = useAuth();
   const { t } = useLanguage();
   const [plans, setPlans]     = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,6 +101,7 @@ export default function SavedPlansPage({ onBack, onLoadPlan }) {
   const [deleting, setDeleting] = useState(null); // planId being deleted
 
   const load = useCallback(async () => {
+    if (isGuest) { setLoading(false); return; }   // guests have no saved plans
     setLoading(true);
     setError(null);
     try {
@@ -147,6 +148,14 @@ export default function SavedPlansPage({ onBack, onLoadPlan }) {
           <span className="sp__count">{plans.length}</span>
         )}
       </header>
+
+      {/* guest prompt */}
+      {isGuest && (
+        <div className="sp__guest-prompt">
+          <p>Sign in to save and access your agritourism plans across devices.</p>
+          <button className="btn-primary" onClick={logout}>Sign In / Register</button>
+        </div>
+      )}
 
       <div className="sp__body">
 

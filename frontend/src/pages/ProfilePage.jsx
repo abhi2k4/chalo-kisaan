@@ -35,7 +35,7 @@ function SettingsRow({ icon: IconComp, iconBg, title, subtitle, onClick }) {
 }
 
 export default function ProfilePage({ onGoToSavedPlans, onGoToMyLand, onGoToOnboarding }) {
-  const { user, profile, setProfile, authHeader, logout } = useAuth();
+  const { user, profile, setProfile, authHeader, logout, isGuest } = useAuth();
   const { language, setLanguage, t } = useLanguage();
 
   /* ── Edit Profile state ── */
@@ -96,6 +96,14 @@ export default function ProfilePage({ onGoToSavedPlans, onGoToMyLand, onGoToOnbo
 
   return (
     <div className="profile">
+
+      {/* ── Guest banner ── */}
+      {isGuest && (
+        <div className="profile__guest-banner">
+          <IconUser size={18} strokeWidth={2} />
+          <span>You're browsing as a guest. <button className="profile__guest-login-link" onClick={logout}>Sign in</button> to save your profile and plans.</span>
+        </div>
+      )}
 
       {/* ── Edit Profile Modal ── */}
       {showEdit && (

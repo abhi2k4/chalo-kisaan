@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, field_validator
 
 from app.services.cognito import register, login, refresh_tokens, get_user_profile, update_user_profile
-from app.middleware.auth import AuthUser, require_auth
+from app.middleware.auth import AuthUser, require_auth, deny_guest
 from app.utils.dynamo import log_event
 
 logger = logging.getLogger(__name__)
@@ -142,6 +142,7 @@ async def refresh_route(req: RefreshRequest):
 @router.get("/me")
 async def get_me(user: AuthUser = Depends(require_auth)):
     """Returns the authenticated farmer's full profile from Cognito."""
+    deny_guest(user)
     try:
         profile = get_user_profile(user.phone)
         return {"success": True, **profile}
@@ -155,6 +156,7 @@ async def get_me(user: AuthUser = Depends(require_auth)):
 @router.put("/me")
 async def update_me(req: UpdateProfileRequest, user: AuthUser = Depends(require_auth)):
     """Update the authenticated farmer's profile attributes in Cognito."""
+    deny_guest(user)
     try:
         result = update_user_profile(
             user.phone,
