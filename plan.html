@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Risk Intelligence Platform: Knowledge-Graph-First Explainable AI Blueprint</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e293b;
+            --secondary: #475569;
+            --accent: #3b82f6;
+            --surface: #f8fafc;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+        }
+        
+        .serif {
+            font-family: 'Crimson Text', serif;
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 1.5rem;
+            height: 60vh;
+            min-height: 500px;
+        }
+        
+        .hero-main {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem;
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(30, 41, 59, 0.8) 100%);
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            padding: 3rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .hero-accent {
+            grid-column: 1;
+            grid-row: 2;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+        
+        .hero-stats {
+            grid-column: 2;
+            grid-row: 2;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+        
+        .toc {
+            position: fixed;
+            left: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 280px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .toc a {
+            display: block;
+            padding: 0.5rem 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .toc a:hover {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .toc .toc-level-2 {
+            margin-left: 1rem;
+            font-size: 0.8rem;
+        }
+        
+        .main-content {
+            margin-left: 320px;
+            padding: 2rem;
+            max-width: calc(100vw - 360px);
+        }
+        
+        .chart-container {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .citation {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .citation:hover {
+            text-decoration: underline;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(30, 41, 59, 0.05) 100%);
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
+            margin: 3rem 0;
+        }
+        
+        @media (max-width: 1280px) {
+            .toc {
+                position: relative;
+                left: auto;
+                top: auto;
+                transform: none;
+                width: 100%;
+                margin-bottom: 2rem;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .toc {
+                display: none;
+            }
+            
+            .hero-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: auto;
+            }
+            
+            .hero-main {
+                grid-column: 1;
+                grid-row: auto;
+                min-height: 300px;
+            }
+            
+            .hero-accent,
+            .hero-stats {
+                grid-column: 1;
+                grid-row: auto;
+            }
+            
+            .hero-content {
+                padding: 1.5rem;
+            }
+            
+            .hero-content h1 {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+            
+            .hero-content p {
+                font-size: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+  <base target="_blank">
+</head>
+
+  <body class="bg-gray-50" style="overflow-x: hidden;">
+    <!-- Table of Contents -->
+    <nav class="toc">
+      <h3 class="font-semibold text-lg mb-4 serif">Contents</h3>
+      <a href="#executive-summary">Executive Summary</a>
+      <a href="#problem-statement">1. Problem Statement</a>
+      <a href="#risk-monitoring" class="toc-level-2">1.1 Multi-Dimensional Risk Monitoring</a>
+      <a href="#explainability" class="toc-level-2">1.2 The Explainability Imperative</a>
+      <a href="#three-atom-model" class="toc-level-2">1.3 Three-Atom Model</a>
+      <a href="#knowledge-architecture">2. Knowledge-Graph-First Architecture</a>
+      <a href="#entity-model" class="toc-level-2">2.1 Entity Model</a>
+      <a href="#risk-propagation" class="toc-level-2">2.2 Risk Propagation Engine</a>
+      <a href="#ai-system">3. Explainable AI System</a>
+      <a href="#hybrid-model" class="toc-level-2">3.1 Hybrid Model Architecture</a>
+      <a href="#source-evidence" class="toc-level-2">3.2 Source Evidence Anchoring</a>
+      <a href="#material-detection">4. Material Change Detection</a>
+      <a href="#alert-intelligence" class="toc-level-2">4.1 Alert Intelligence</a>
+      <a href="#stakeholder-routing" class="toc-level-2">4.2 Stakeholder Routing</a>
+      <a href="#advanced-scenarios">5. Advanced Risk Scenarios</a>
+      <a href="#contract-lockin" class="toc-level-2">5.1 Contract Lock-In Intelligence</a>
+      <a href="#geopolitical-risk" class="toc-level-2">5.2 Geopolitical Risk Inheritance</a>
+      <a href="#rbi-compliance">6. RBI Compliance Framework</a>
+      <a href="#free-ai-adherence" class="toc-level-2">6.1 FREE-AI Adherence</a>
+      <a href="#audit-trail" class="toc-level-2">6.2 Audit Trail System</a>
+      <a href="#technical-architecture">7. Technical Architecture</a>
+      <a href="#data-pipeline" class="toc-level-2">7.1 Data Pipeline</a>
+      <a href="#ml-infrastructure" class="toc-level-2">7.2 ML Infrastructure</a>
+      <a href="#competitive-landscape">8. Competitive Landscape</a>
+      <a href="#market-gaps" class="toc-level-2">8.1 Market Gaps & Opportunities</a>
+      <a href="#prototype-scope">9. Prototype Scope</a>
+      <a href="#feasibility" class="toc-level-2">9.1 Feasibility Assessment</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <div class="hero-grid mb-12">
+        <div class="hero-main">
+          <div class="hero-overlay"></div>
+          <div class="hero-content">
+            <div class="mb-6">
+              <span class="inline-block px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-full mb-4">
+                Platform Blueprint
+              </span>
+            </div>
+            <h1 class="text-5xl font-bold text-white serif mb-6 leading-tight">
+              <em class="text-blue-300">Knowledge-Graph-First</em>
+              <br>
+              Explainable AI for
+              <br>
+              Continuous Vendor Risk Intelligence
+            </h1>
+            <p class="text-xl text-gray-300 max-w-2xl leading-relaxed">
+              A regulatory-compliant platform that transforms how Indian financial institutions monitor, detect, and act on vendor risks through source-level evidence anchoring and transparent AI decision-making.
+            </p>
+          </div>
+        </div>
+
+        <div class="hero-accent">
+          <h3 class="font-semibold text-lg mb-3 serif">Core Innovation</h3>
+          <p class="text-sm text-gray-600 mb-4">
+            Source-level evidence anchoring ensures every risk score change is traceable to verifiable raw data, satisfying regulatory mandates and operational trust requirements.
+          </p>
+          <div class="flex items-center text-xs text-gray-500">
+            <i class="fas fa-shield-alt mr-2"></i>
+            RBI FREE-AI Framework Compliant
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <h3 class="font-semibold text-lg mb-3 serif">Platform Impact</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600">Risk Detection Speed</span>
+              <span class="text-sm font-semibold text-blue-600">&lt; 15 minutes</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600">Explainability Verification</span>
+              <span class="text-sm font-semibold text-blue-600">100% Source-Anchored</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Executive Summary -->
+      <section id="executive-summary" class="mb-16">
+        <div class="highlight-box">
+          <h2 class="text-2xl font-bold serif mb-4">Executive Summary</h2>
+          <p class="text-lg leading-relaxed mb-4">
+            This blueprint outlines a <strong>knowledge-graph-first, explainable AI platform for continuous vendor risk intelligence</strong> targeting Indian financial institutions. The core innovation is <strong>source-level evidence anchoring</strong>—every risk score change must be traceable to verifiable raw data, satisfying regulatory mandates (RBI FREE-AI) and operational trust requirements.
+          </p>
+          <p class="leading-relaxed">
+            The platform combines <strong>event-driven + periodic monitoring</strong> across six risk dimensions (cybersecurity to operational stability), <strong>graph-based risk propagation</strong> for nth-party and concentration risks, and <strong>hybrid AI</strong> (ensemble learning + LLMs) with SHAP/LIME explanations. For hackathon feasibility, the prototype focuses on <strong>cybersecurity + operational dimensions</strong> with a <strong>live explainability dashboard</strong>, while the production roadmap expands to full regulatory integration and enterprise system connectivity.
+          </p>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 1: Problem Statement -->
+      <section id="problem-statement" class="mb-16">
+        <h2 class="text-3xl font-bold serif mb-8">1. The Core Problem & Value Proposition</h2>
+
+        <div id="explainability" class="mb-12">
+          <h3 class="text-2xl font-semibold serif mb-6">1.1 The Explainability Imperative</h3>
+
+          <p class="text-lg leading-relaxed mb-6">
+            The foundational requirement for this vendor risk intelligence platform stems from a critical insight that has emerged from both regulatory pressure and operational necessity: <strong>risk scores without transparent, verifiable provenance are fundamentally untrustworthy regardless of their predictive accuracy</strong>. The problem statement explicitly declares that <em>"the system must be explainable: showing why a risk score changed, with source-level evidence, so a human can verify before acting. Black-box scores will not be trusted, no matter how accurate."</em>
+          </p>
+
+          <div class="highlight-box">
+            <h4 class="font-semibold mb-3">Source-Level Evidence Requirement</h4>
+            <p class="mb-4">
+              The source-level evidence requirement demands that every risk score computation be traceable to specific, identifiable data points from verifiable sources. This goes far beyond generic explanations like "financial health deteriorated" or "negative news detected."
+            </p>
+            <ul class="list-disc list-inside space-y-2 text-sm">
+              <li>Specific MCA filing showing a 40% drop in quarterly revenue</li>
+              <li>Exact SecurityScorecard vulnerability report identifying three critical unpatched CVEs</li>
+              <li>Court case docket number referencing a fraud allegation</li>
+              <li>Precise news article timestamp and excerpt mentioning a data breach</li>
+            </ul>
+          </div>
+
+          <p class="leading-relaxed mb-6">
+            Research on hybrid AI-based dynamic risk assessment frameworks emphasizes that <a href="https://link.springer.com/article/10.1007/s10207-025-01189-8" class="citation">"trusting model-driven decisions requires them to be transparent as well as auditable, thus XAI techniques like feature contribution and feature correlation are integrated with risk management to maintain decision-driven transparency"</a>
+            <sup>[187]</sup>. These explainability tools help verify the key features and their interactions that drive predictive algorithms, thereby allowing more precise control implementation and human verification.
+          </p>
+        </div>
+
+        <div id="three-atom-model" class="mb-12">
+          <h3 class="text-2xl font-semibold serif mb-6">1.2 Three-Atom Operating Model: Watch, Detect, Act</h3>
+
+          <p class="leading-relaxed mb-6">
+            The problem statement distills vendor risk management to three fundamental operations—<strong>Watch, Detect, Act</strong>—that must execute continuously and cohesively. This atomic decomposition provides both conceptual clarity for system design and operational metrics for performance evaluation.
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white border border-gray-200 rounded-lg p-6">
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <i class="fas fa-eye text-blue-600 text-xl"></i>
+              </div>
+              <h4 class="font-semibold mb-2">Watch</h4>
+              <p class="text-sm text-gray-600">Continuous vendor surveillance across six risk dimensions through event-driven triggers and scheduled polling</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-lg p-6">
+              <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                <i class="fas fa-exclamation-triangle text-orange-600 text-xl"></i>
+              </div>
+              <h4 class="font-semibold mb-2">Detect</h4>

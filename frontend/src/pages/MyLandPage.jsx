@@ -100,7 +100,7 @@ function Pill({ label, active, onClick }) {
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function MyLandPage({ initialPlanData, initialFarmData, initialFarmImage, onPlanReady, onBack }) {
   const { authHeader } = useAuth();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   /* ── Form state ── */
   const EMPTY_FORM = {

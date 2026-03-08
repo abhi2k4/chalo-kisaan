@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  IconTractor, IconBuildingBank, IconLanguage,
+  IconTractor,IconLanguage,
   IconHeadset, IconChevronRight, IconMapPin,
   IconCheck, IconBookmark, IconEdit, IconLoader2,
   IconX, IconUser,

@@ -112,7 +112,7 @@ export default function SavedPlansPage({ onBack, onLoadPlan }) {
     } finally {
       setLoading(false);
     }
-  }, [authHeader]);
+  }, [authHeader, isGuest]);
 
   useEffect(() => { load(); }, [load]);
 
