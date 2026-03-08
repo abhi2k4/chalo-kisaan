@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   IconUsers, IconTrendingUp, IconLeaf,
   IconMicrophone, IconRobot, IconPhoto,
@@ -10,6 +10,75 @@ import { useNarrator } from '../hooks/useNarrator';
 import { useLanguage } from '../context/LanguageContext';
 import './LandingPage.css';
 
+// ── Multilingual phrases for the cycling typewriter ────────────────────────
+const CYCLE_PHRASES = [
+  { text: 'AI-powered agritourism planning',        lang: 'en' },
+  { text: 'AI-संचालित कृषि पर्यटन योजना',            lang: 'hi' },
+  { text: 'AI-સંચાલિત કૃષિ પર્યટન આયોજન',            lang: 'gu' },
+  { text: 'AI-चालित कृषी पर्यटन नियोजन',              lang: 'mr' },
+  { text: 'AI-ਸੰਚਾਲਿਤ ਖੇਤੀ ਸੈਰ-ਸਪਾਟਾ ਯੋਜਨਾਬੰਦੀ',      lang: 'pa' },
+];
+
+const TYPE_SPEED   = 50;   // ms per character while typing
+const DELETE_SPEED = 35;   // ms per character while deleting
+const HOLD_MS      = 2500; // pause after fully typed
+const PAUSE_MS     = 300;  // pause after fully deleted
+
+function TypewriterCycle() {
+  const [phraseIdx, setPhraseIdx]   = useState(0);
+  const [displayed, setDisplayed]   = useState('');
+  const timeoutRef = useRef(null);
+  const charIdxRef = useRef(0);
+  const phaseRef = useRef('typing'); // typing | holding | deleting | pausing
+
+  useEffect(() => {
+    const full = CYCLE_PHRASES[phraseIdx].text;
+    charIdxRef.current = 0;
+    phaseRef.current = 'typing';
+    setDisplayed('');
+
+    const animate = () => {
+      if (phaseRef.current === 'typing') {
+        if (charIdxRef.current < full.length) {
+          charIdxRef.current += 1;
+          setDisplayed(full.slice(0, charIdxRef.current));
+          timeoutRef.current = setTimeout(animate, TYPE_SPEED);
+        } else {
+          phaseRef.current = 'holding';
+          timeoutRef.current = setTimeout(animate, HOLD_MS);
+        }
+      } else if (phaseRef.current === 'holding') {
+        phaseRef.current = 'deleting';
+        animate();
+      } else if (phaseRef.current === 'deleting') {
+        if (charIdxRef.current > 0) {
+          charIdxRef.current -= 1;
+          setDisplayed(full.slice(0, charIdxRef.current));
+          timeoutRef.current = setTimeout(animate, DELETE_SPEED);
+        } else {
+          phaseRef.current = 'pausing';
+          timeoutRef.current = setTimeout(animate, PAUSE_MS);
+        }
+      } else if (phaseRef.current === 'pausing') {
+        setPhraseIdx(i => (i + 1) % CYCLE_PHRASES.length);
+      }
+    };
+
+    timeoutRef.current = setTimeout(animate, 100);
+
+    return () => clearTimeout(timeoutRef.current);
+  }, [phraseIdx]);
+
+  const langAttr = CYCLE_PHRASES[phraseIdx].lang;
+
+  return (
+    <em className="landing__typewriter" lang={langAttr}>
+      {displayed}
+      <span className="landing__cursor" aria-hidden="true" />
+    </em>
+  );
+}
+
 const STATS = [
   { value: '8.6 Cr',  label: 'Marginal farmers in India',          Icon: IconUsers },
   { value: '₹2 Lakh', label: 'Avg. annual side income potential',  Icon: IconTrendingUp },
@@ -17,12 +86,12 @@ const STATS = [
 ];
 
 const FEATURES = [
-  { Icon: IconMicrophone,    title: 'Voice Input',        desc: 'Speak in Hindi, Marathi or English. No typing required.' },
-  { Icon: IconRobot,         title: 'AI Business Plan',   desc: 'Step-by-step agritourism plan tailored to your land.' },
-  { Icon: IconPhoto,         title: 'Farm Visualisation', desc: 'See how your farm looks after transformation.' },
-  { Icon: IconCurrencyRupee, title: 'Revenue Forecast',   desc: 'Realistic income projections and break-even analysis.' },
-  { Icon: IconBuilding,      title: 'Govt. Schemes',      desc: 'Schemes and subsidies you are eligible for.' },
-  { Icon: IconFileText,      title: 'Bank-Ready Report',  desc: 'Download a detailed PDF plan for loan applications.' },
+  { Icon: IconMicrophone,    title: 'Voice Input',        desc: 'Speak in Hindi, Marathi or English. No typing required.', color: '#FF6B6B' },
+  { Icon: IconRobot,         title: 'AI Business Plan',   desc: 'Step-by-step agritourism plan tailored to your land.', color: '#4ECDC4' },
+  { Icon: IconPhoto,         title: 'Farm Visualisation', desc: 'See how your farm looks after transformation.', color: '#45B7D1' },
+  { Icon: IconCurrencyRupee, title: 'Revenue Forecast',   desc: 'Realistic income projections and break-even analysis.', color: '#96CEB4' },
+  { Icon: IconBuilding,      title: 'Govt. Schemes',      desc: 'Schemes and subsidies you are eligible for.', color: '#FFEAA7' },
+  { Icon: IconFileText,      title: 'Bank-Ready Report',  desc: 'Download a detailed PDF plan for loan applications.', color: '#DDA0DD' },
 ];
 
 export default function LandingPage({ onStart, language = 'hindi' }) {
@@ -61,11 +130,8 @@ export default function LandingPage({ onStart, language = 'hindi' }) {
           </div>
           <h1 className="landing__headline">
             {t('landing_tagline')}<br />
-            <em>{t('landing_sub')}</em>
+            <TypewriterCycle />
           </h1>
-          <p className="landing__subheadline">
-            {t('landing_sub')}
-          </p>
           <button className="landing__cta btn-primary" onClick={onStart}>
             {t('landing_start')}
             <span className="landing__cta-arrow">→</span>
@@ -131,10 +197,10 @@ export default function LandingPage({ onStart, language = 'hindi' }) {
       <section className="landing__features">
         <h2 className="landing__features-title">What Chalo Kisaan Does For You</h2>
         <div className="landing__features-grid">
-          {FEATURES.map(({ Icon, title, desc }, i) => (
+          {FEATURES.map(({ Icon, title, desc, color }, i) => (
             <div key={i} className="landing__feature" style={{ animationDelay: `${i * 0.07}s` }}>
-              <div className="landing__feature-icon">
-                <Icon size={24} stroke={1.5} color="var(--forest)" />
+              <div className="landing__feature-icon" style={{ backgroundColor: `${color}20`, color }}>
+                <Icon size={28} stroke={1.5} />
               </div>
               <div className="landing__feature-title">{title}</div>
               <div className="landing__feature-desc">{desc}</div>
