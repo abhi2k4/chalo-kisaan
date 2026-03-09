@@ -4,7 +4,7 @@
    Completely invisible/transparent on mobile (≤ 767px).
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Transition animation for mockup entrance */
+
 @keyframes pm-enter {
   0% {
     opacity: 0;
@@ -40,7 +40,7 @@
    ──────────────────────────────────────────────────────────────────────────── */
 @media (min-width: 768px) {
 
-  /* ── Outer full-screen stage ── */
+  
   .phone-mockup-container {
     position: fixed;
     inset: 0;
@@ -52,7 +52,7 @@
     animation: pm-enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
 
-  /* ── Dark background ── */
+  
   .phone-mockup-bg {
     position: absolute;
     inset: 0;
@@ -69,7 +69,7 @@
     pointer-events: none;
   }
 
-  /* ── Branding badge ── */
+  
   .phone-mockup-branding {
     position: absolute;
     bottom: 28px;
@@ -108,7 +108,7 @@
     font-family: var(--font-body,'Inter',sans-serif);
   }
 
-  /* ── Phone frame ── */
+  
   .phone-mockup {
     position: relative;
     z-index: 1;
@@ -116,7 +116,7 @@
     height: 812px;
     background: #111;
     border-radius: 54px;
-    /* 12px padding so the screen sits inside the bezel */
+    
     padding: 12px;
     box-shadow:
       inset 0 0 0 1px rgba(255,255,255,0.10),
@@ -124,7 +124,7 @@
       0 24px 64px rgba(0,0,0,0.50),
       0 48px 120px rgba(0,0,0,0.30);
   }
-  /* Left side buttons */
+  
   .phone-mockup::before {
     content: '';
     position: absolute;
@@ -134,7 +134,7 @@
     border-radius: 2px 0 0 2px;
     box-shadow: 0 42px 0 0 #333, 0 84px 0 0 #333;
   }
-  /* Right power button */
+  
   .phone-mockup::after {
     content: '';
     position: absolute;
@@ -144,7 +144,7 @@
     border-radius: 0 2px 2px 0;
   }
 
-  /* ── Screen — flex column, clips everything, IS the positioning context ── */
+  
   /* transform: translateZ(0) makes position:fixed children relative to THIS element,
      not the viewport — so the BottomNav's native position:fixed will pin to the screen */
   .phone-mockup__screen {
@@ -156,11 +156,11 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transform: translateZ(0);   /* ← creates containing block for fixed children */
+    transform: translateZ(0);   
     will-change: transform;
   }
 
-  /* ── Status Bar — fixed at top, takes 54px ── */
+  
   .phone-mockup__status-bar {
     flex: 0 0 54px;
     position: relative;
@@ -172,7 +172,7 @@
     z-index: 50;
   }
 
-  /* Time — left */
+  
   .phone-mockup__status-time {
     font-size: 13px;
     font-weight: 700;
@@ -183,7 +183,7 @@
     min-width: 40px;
   }
 
-  /* Dynamic island pill — centre */
+  
   .phone-mockup__dynamic-island {
     position: absolute;
     left: 50%;
@@ -211,7 +211,7 @@
     box-shadow: inset 0 0 2px rgba(255,255,255,0.15), 0 0 0 2px #111;
   }
 
-  /* Status icons — right */
+  
   .phone-mockup__status-icons {
     display: flex;
     align-items: center;
@@ -220,15 +220,15 @@
   }
   .phone-mockup__status-icons svg { display: block; flex-shrink: 0; }
 
-  /* ── Body — flex:1 filler below status bar ── */
+  
   .phone-mockup__body {
     flex: 1;
-    min-height: 0;          /* critical: lets flex child shrink below content size */
-    position: relative;     /* NOT needed for nav; screen handles that */
+    min-height: 0;          
+    position: relative;     
     overflow: hidden;
   }
 
-  /* ── Scroll area — full height of body, scrollable ── */
+  
   .phone-mockup__scroll {
     height: 100%;
     overflow-y: auto;
@@ -242,25 +242,25 @@
      App overrides — force mobile-style layout inside the mockup
      ══════════════════════════════════════════════════════════════════════════ */
 
-  /* App root */
+  
   .phone-mockup__scroll .app {
     display: flex;
     flex-direction: column;
     min-height: 100%;
   }
 
-  /* Hide desktop TopNav */
+  
   .phone-mockup__scroll .top-nav {
     display: none !important;
   }
 
-  /* ── BottomNav: pinned to BOTTOM OF SCREEN (not scroll area) ── */
+  
   /* The screen has transform:translateZ(0), which makes position:fixed children
      position relative to the screen element instead of the viewport.
      So the nav's own position:fixed naturally locks to the bottom of the phone screen. */
   .phone-mockup__screen .bottom-nav {
     display: flex !important;
-    position: fixed !important;   /* scoped to screen via transform */
+    position: fixed !important;   
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
@@ -270,21 +270,21 @@
     margin: 0 !important;
   }
 
-  /* Scroll area gets bottom padding so content never hides behind the nav */
+  
   .phone-mockup__scroll .app--with-nav {
     padding-bottom: var(--nav-h, 68px);
   }
-  /* Also cover plain pages that don't use app--with-nav */
+  
   .phone-mockup__scroll > *:last-child {
     padding-bottom: var(--nav-h, 68px);
   }
-  /* Explicitly ensure HomePage scroll area has bottom padding */
+  
   .phone-mockup__scroll .home__scroll {
     padding-bottom: calc(var(--nav-h, 68px) + 16px) !important;
   }
 }
 
-/* ── Larger desktop ── */
+
 @media (min-width: 1200px) {
   .phone-mockup { width: 390px; height: 844px; }
 }

@@ -18,7 +18,7 @@
     padding: var(--sp-6) var(--page-px, 16px);
     padding-bottom: calc(var(--nav-h, 64px) + var(--sp-6));
   }
-}Page ─────────────────────────────────────────────────────────── */
+}
 
 .login {
   min-height: 100dvh;

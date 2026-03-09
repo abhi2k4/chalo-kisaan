@@ -16,9 +16,9 @@ const STORAGE_KEY = 'ck_language';
 
 function loadStoredLang() {
   try {
-    return localStorage.getItem(STORAGE_KEY) || 'hindi';
+    return localStorage.getItem(STORAGE_KEY) || 'english';
   } catch {
-    return 'hindi';
+    return 'english';
   }
 }
 

@@ -4,7 +4,7 @@
    Font: Outfit (display) + system font stack (body)
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Page Shell ── */
+
 .home {
   display: flex;
   flex-direction: column;
@@ -14,7 +14,7 @@
   overflow: hidden;
 }
 
-/* ── Header ── */
+
 .home__header {
   position: sticky;
   top: 0;
@@ -23,7 +23,7 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: 14px var(--page-px, 16px) 12px;
-  /* Always visible — gradient from hero dark top ensures text readable */
+  
   background: linear-gradient(180deg, rgba(5,40,18,0.75) 0%, rgba(5,40,18,0) 100%);
   transition: background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease;
 }
@@ -61,7 +61,7 @@
 .home__greeting-name { color: #a8f0b0; }
 .home__header--scrolled .home__greeting-name { color: var(--g-500); }
 
-/* Header right group (bell + avatar) */
+
 .home__header-right {
   display: flex;
   align-items: center;
@@ -69,7 +69,7 @@
   flex-shrink: 0;
 }
 
-/* Notification button */
+
 .home__notif-btn {
   position: relative;
   width: 38px;
@@ -100,7 +100,7 @@
   border-radius: 50%;
 }
 
-/* Plan chip below greeting */
+
 .home__plan-chip {
   display: inline-flex;
   align-items: center;
@@ -151,7 +151,7 @@
   border-radius: 50%;
 }
 
-/* ── Scroll Container ── */
+
 .home__scroll {
   flex: 1;
   overflow-y: auto;
@@ -160,15 +160,15 @@
   padding-bottom: calc(var(--nav-h, 64px) + 16px);
 }
 
-/* ── Hero ── */
+
 .home__hero {
   position: relative;
   height: 310px;
   overflow: hidden;
-  margin-top: -72px; /* Pull up behind header */
+  margin-top: -72px; 
 }
 
-/* Farm landscape SVG */
+
 .farm-landscape {
   position: absolute;
   inset: 0;
@@ -177,7 +177,7 @@
   object-fit: cover;
 }
 
-/* SVG Animations */
+
 .farm-sun {
   animation: sunPulse 4s ease-in-out infinite;
 }
@@ -238,7 +238,7 @@
   100% { opacity: 0.2; transform: translateX(-2px); }
 }
 
-/* Updates pill */
+
 .hero-pill {
   position: absolute;
   top: 82px;
@@ -283,7 +283,7 @@
 
 .hero-pill__close:hover { background: rgba(0,0,0,0.1); }
 
-/* Hero content overlay */
+
 .hero-content {
   position: absolute;
   bottom: 0;
@@ -295,7 +295,7 @@
   z-index: 5;
 }
 
-/* Plan summary in hero */
+
 .hero-plan-summary {
   display: flex;
   align-items: center;
@@ -333,7 +333,7 @@
   margin-top: 4px;
 }
 
-/* CTA text (no plan) */
+
 .hero-cta-text { padding-bottom: 4px; }
 
 .hero-cta-eyebrow {
@@ -357,7 +357,7 @@
   font-family: var(--font-body);
 }
 
-/* Hero action buttons */
+
 .hero-actions {
   display: flex;
   flex-direction: column;
@@ -409,7 +409,7 @@
 .hero-action-btn--ai .hero-action-btn__icon { background: rgba(255,255,255,0.2); }
 .hero-action-btn--ai:hover { box-shadow: 0 6px 20px rgba(76,175,80,0.5); transform: translateY(-2px); }
 
-/* ── Content Area ── */
+
 .home__content {
   padding: 16px var(--page-px, 16px) 0;
   display: flex;
@@ -417,7 +417,7 @@
   gap: 14px;
 }
 
-/* ── Stats Row ── */
+
 .stats-row {
   display: flex;
   gap: 10px;
@@ -448,7 +448,7 @@
 .stat-pill__label { font-size: 10px; color: var(--ink-3, #888); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .stat-pill__value { font-size: 14px; font-weight: 800; color: var(--ink, #111); font-family: var(--font-body); }
 
-/* ── Income Card ── */
+
 .income-card {
   background: #1a3320;
   border-radius: 20px;
@@ -519,7 +519,7 @@
   margin-top: 4px;
 }
 
-/* Mini bar chart */
+
 .income-card__chart {
   display: flex;
   align-items: flex-end;
@@ -564,7 +564,7 @@
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 
-/* ── Action Tiles ── */
+
 .tiles-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -629,7 +629,7 @@
 
 .action-tile:hover .action-tile__arrow { opacity: 1; transform: translateX(2px); }
 
-/* ── Tip Card ── */
+
 .tip-card {
   background: #fff;
   border-radius: 18px;
@@ -672,7 +672,7 @@
   pointer-events: none;
 }
 
-/* ── Activities ── */
+
 .activities-section {
   background: #fff;
   border-radius: 18px;
@@ -727,7 +727,7 @@
   flex-shrink: 0;
 }
 
-/* ── Empty State ── */
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -794,7 +794,7 @@
 .empty-state__btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(46,125,50,0.45); }
 .empty-state__btn:active { transform: translateY(0); }
 
-/* ── Info Strip ── */
+
 .info-strip {
   display: flex;
   align-items: center;
@@ -835,7 +835,7 @@
   margin: 0 4px;
 }
 
-/* ── Animations ── */
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -846,10 +846,10 @@
   50%       { transform: translateY(-8px); }
 }
 
-/* ── Bottom Padding ── */
+
 .home__bottom-pad { height: 100px; }
 
-/* ── Desktop ── */
+
 @media (min-width: 768px) {
   .home {
     max-width: var(--max-app, 420px);
@@ -869,7 +869,7 @@
   .stat-pill { padding: 14px 14px; }
 }
 
-/* ── Safe area for notch phones ── */
+
 @supports (padding: max(0px)) {
   .home__header {
     padding-top: max(14px, env(safe-area-inset-top, 14px));
