@@ -9,9 +9,9 @@ import {
   IconBuildingWarehouse, IconCurrencyRupee, IconPlant2,
   IconCheck, IconLoader2, IconAlertCircle, IconRefresh,
   IconSparkles, IconChecklist, IconTrendingUp, IconShield,
-  IconBookmark, IconChevronRight, IconSearch,
+  IconBookmark, IconChevronRight, IconSearch, IconFileAnalytics,
 } from '@tabler/icons-react';
-import { generatePlanStream, analyzeImage, generateVisualization } from '../utils/api';
+import { generatePlanStream, analyzeImage, generateVisualization, createReport } from '../utils/api';
 import { validateImageFile, getValidationSuggestion } from '../utils/imageValidation';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -98,7 +98,7 @@ function Pill({ label, active, onClick }) {
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
-export default function MyLandPage({ initialPlanData, initialFarmData, initialFarmImage, onPlanReady, onBack }) {
+export default function MyLandPage({ initialPlanData, initialFarmData, initialFarmImage, initialReportId, onPlanReady, onBack, onViewReport }) {
   const { authHeader } = useAuth();
   const { t } = useLanguage();
 
@@ -122,6 +122,8 @@ export default function MyLandPage({ initialPlanData, initialFarmData, initialFa
   const [vizLoading, setVizLoading]     = useState(false);
   const [isSaving, setIsSaving]         = useState(false);
   const [saveStatus, setSaveStatus]     = useState(null); // null | 'saved' | 'error'
+  const [reportId, setReportId]         = useState(initialReportId || null);
+  const [reportCreating, setReportCreating] = useState(false);
   const rawRef      = useRef('');
   const streamBoxRef = useRef(null);
   const fileRef      = useRef(null);
@@ -246,6 +248,16 @@ export default function MyLandPage({ initialPlanData, initialFarmData, initialFa
       setPlanData(result);
       setView('plan');
       onPlanReady?.(result, form, imagePreview);
+      // Auto-create report (non-blocking)
+      setReportCreating(true);
+      try {
+        const rep = await createReport(form, result, form.language || 'hindi', imagePreview, authHeader());
+        if (rep?.reportId) setReportId(rep.reportId);
+      } catch (e) {
+        console.warn('[MyLandPage] Report save failed (non-fatal):', e);
+      } finally {
+        setReportCreating(false);
+      }
     } else {
       setError("Could not generate plan. Please try again.");
       setView('form');
@@ -748,6 +760,25 @@ export default function MyLandPage({ initialPlanData, initialFarmData, initialFa
                 ? <><IconBookmark size={16} strokeWidth={2} /> {t('myl_retry_save')}</>
                 : <><IconBookmark size={16} strokeWidth={2} /> {t('myl_save_plan')}</>}
             </button>
+          </div>
+
+          {/* View Full Report button */}
+          <div className="myl__report-row">
+            {reportCreating && (
+              <div className="myl__report-creating">
+                <IconLoader2 size={14} strokeWidth={2} className="spin" />
+                <span>Saving report…</span>
+              </div>
+            )}
+            {reportId && !reportCreating && (
+              <button
+                className="myl__action-btn myl__action-btn--report"
+                onClick={() => onViewReport?.(reportId)}
+              >
+                <IconFileAnalytics size={16} strokeWidth={2} />
+                View Full Report &amp; Visualizations
+              </button>
+            )}
           </div>
         </div>
 

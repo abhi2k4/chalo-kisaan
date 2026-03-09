@@ -26,13 +26,16 @@ export function PrimaryPlanProvider({ children }) {
       return null;
     }
   });
+  const [primaryPlanId, setPrimaryPlanId] = useState(null);
   const [lastUserId, setLastUserId] = useState(null);
+  const [isLoadingPrimaryPlan, setIsLoadingPrimaryPlan] = useState(false);
 
   // Fetch primary plan from backend when user logs in OR user ID changes
   useEffect(() => {
     if (!isLoggedIn) {
       // Clear plan when logging out
       setPrimaryPlanState(null);
+      setPrimaryPlanId(null);
       localStorage.removeItem('ck_primary_plan');
       setLastUserId(null);
       return;
@@ -43,6 +46,7 @@ export function PrimaryPlanProvider({ children }) {
     if (currentUserId && lastUserId && lastUserId !== currentUserId) {
       // User changed — clear the old plan immediately
       setPrimaryPlanState(null);
+      setPrimaryPlanId(null);
       localStorage.removeItem('ck_primary_plan');
     }
     
@@ -51,26 +55,48 @@ export function PrimaryPlanProvider({ children }) {
     // Fetch from backend
     const fetchPrimaryPlan = async () => {
       try {
+        setIsLoadingPrimaryPlan(true);
         const token = localStorage.getItem('idToken') || localStorage.getItem('cognito_token') || '';
-        if (!token) return;
+        if (!token) {
+          setIsLoadingPrimaryPlan(false);
+          return;
+        }
 
         const res = await fetch(`${API_BASE}/assistant/primary-plan`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
 
-        if (!res.ok) return;
+        if (!res.ok) {
+          setIsLoadingPrimaryPlan(false);
+          return;
+        }
         const data = await res.json();
 
+        // Store both the plan and the plan ID
+        if (data.primary_plan_id) {
+          setPrimaryPlanId(data.primary_plan_id);
+        }
+        
         if (data.plan) {
           setPrimaryPlanState(data.plan);
           localStorage.setItem('ck_primary_plan', JSON.stringify(data.plan));
+        } else if (data.primary_plan_id) {
+          // Plan ID exists but plan data is null (plan might be deleted)
+          // Clear it from state but keep the ID for UI reference
+          setPrimaryPlanState(null);
+          localStorage.removeItem('ck_primary_plan');
         }
+        
+        setIsLoadingPrimaryPlan(false);
       } catch (err) {
         console.error('[PrimaryPlanContext] Failed to fetch primary plan:', err);
+        setIsLoadingPrimaryPlan(false);
       }
     };
 
-    fetchPrimaryPlan();
+    // Add a small delay to ensure token is ready after auth refresh
+    const timer = setTimeout(fetchPrimaryPlan, 100);
+    return () => clearTimeout(timer);
   }, [isLoggedIn, profile?.sub, lastUserId]);
 
   const setPrimaryPlan = useCallback((plan) => {
@@ -163,7 +189,7 @@ export function PrimaryPlanProvider({ children }) {
   }, [primaryPlan]);
 
   return (
-    <PrimaryPlanContext.Provider value={{ primaryPlan, setPrimaryPlan, clearPrimaryPlan, buildAssistantContext }}>
+    <PrimaryPlanContext.Provider value={{ primaryPlan, primaryPlanId, setPrimaryPlan, clearPrimaryPlan, buildAssistantContext, isLoadingPrimaryPlan }}>
       {children}
     </PrimaryPlanContext.Provider>
   );

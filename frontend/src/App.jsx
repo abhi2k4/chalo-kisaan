@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -8,6 +8,7 @@ import VoiceAssistantPage from './pages/VoiceAssistantPage';
 import MyLandPage from './pages/MyLandPage';
 import SavedPlansPage from './pages/SavedPlansPage';
 import AlertsPage from './pages/AlertsPage';
+import ResultsPage from './pages/ResultsPage';
 import BottomNav from './components/BottomNav';
 import TopNav from './components/TopNav';
 import InstallBanner from './components/InstallBanner';
@@ -31,6 +32,23 @@ function AppInner() {
   const [planData,  setPlanData]  = useLocalStorage('ck_planData', null);
   const [farmData,  setFarmData]  = useLocalStorage('ck_farmData', null);
   const [farmImage, setFarmImage] = useLocalStorage('ck_farmImage', null);
+  const [currentReportId, setCurrentReportId] = useState(null);
+
+  // Track profile loading state to avoid flashing onboarding before profile is fetched
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  // Mark profile as loaded once it's available (or after a reasonable timeout)
+  useEffect(() => {
+    if (isGuest) {
+      setProfileLoaded(true);
+    } else if (profile?.given_name) {
+      setProfileLoaded(true);
+    } else if (isLoggedIn && !profile) {
+      // Profile fetch is in progress — wait a bit
+      const timer = setTimeout(() => setProfileLoaded(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [profile?.given_name, profile, isGuest, isLoggedIn]);
 
   const [page, setPage] = useState('home');
   const [slideDir, setSlideDir] = useState('none'); // 'left' | 'right' | 'none'
@@ -84,6 +102,18 @@ function AppInner() {
       return <LoginPage onBack={() => setShowLoginGate(false)} />;
     }
     return <LandingPage onStart={() => setShowLoginGate(true)} language={language} />;
+  }
+
+  // Show loading screen while profile is being fetched
+  if (!profileLoaded) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', background: '#f5f7f4' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌾</div>
+          <div style={{ fontSize: '16px', color: '#666' }}>Loading your farm data...</div>
+        </div>
+      </div>
+    );
   }
 
   // Show onboarding if profile has no name yet (first-time user) — guests skip this
@@ -163,8 +193,14 @@ function AppInner() {
           initialPlanData={planData}
           initialFarmData={farmData}
           initialFarmImage={farmImage}
+          initialReportId={currentReportId}
           onPlanReady={(plan, farm, image) => {
             handlePlanComplete(plan, farm, image);
+          }}
+          onViewReport={(id) => {
+            setCurrentReportId(id);
+            setSlideDir('none');
+            setPage('results');
           }}
           onBack={() => goTo('home')}
         />
@@ -182,6 +218,17 @@ function AppInner() {
             setFarmData(farm);
             goTo('my-land');
           }}
+        />
+      )}
+
+      {page === 'results' && (
+        <ResultsPage
+          reportId={currentReportId}
+          planData={planData}
+          farmData={farmData}
+          farmImage={farmImage}
+          language={language}
+          onBack={() => setPage('my-land')}
         />
       )}
 

@@ -9,9 +9,18 @@ const fmt = (n) => {
  * which preserves Devanagari, Gurmukhi, Gujarati scripts.
  */
 export async function exportToPDF(planData, farmData, farmImage) {
-  if (!planData) return;
+  if (!planData) {
+    throw new Error('No plan data available for PDF export');
+  }
 
-  const html2pdf = (await import('html2pdf.js')).default;
+  let html2pdf;
+  try {
+    const module = await import('html2pdf.js');
+    html2pdf = module.default;
+  } catch (e) {
+    console.error('[pdfExport] Failed to load html2pdf.js:', e);
+    throw new Error('PDF library failed to load. Please try again.');
+  }
 
   const container = document.createElement('div');
   container.style.cssText = 'position:absolute;left:-9999px;top:0;width:210mm;font-family:sans-serif;color:#1c1208;';
@@ -138,16 +147,25 @@ export async function exportToPDF(planData, farmData, farmImage) {
   try {
     const filename = `ChaloKisaan_${(service).replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
 
-    await html2pdf().from(container).set({
+    const options = {
       margin: [5, 0, 5, 0],
       filename,
       image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { scale: 2, useCORS: true, allowTaint: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-    }).save();
+    };
+
+    console.log('[pdfExport] Starting PDF generation...');
+    await html2pdf().from(container).set(options).save();
+    console.log('[pdfExport] PDF generated successfully:', filename);
+  } catch (e) {
+    console.error('[pdfExport] Error during PDF generation:', e);
+    throw new Error(`PDF generation failed: ${e.message}`);
   } finally {
-    document.body.removeChild(container);
+    if (document.body.contains(container)) {
+      document.body.removeChild(container);
+    }
   }
 }
 

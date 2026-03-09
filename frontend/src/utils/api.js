@@ -127,10 +127,10 @@ export async function visualizeLand(imageBase64, services, farmData, mode = 'tra
 
 // ── Report API (new) ──────────────────────────────────────────
 
-export async function createReport(farmData, planData, language, farmImageBase64 = null) {
+export async function createReport(farmData, planData, language, farmImageBase64 = null, authHeader = {}) {
   const response = await fetch(`${API_BASE}/reports`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeader },
     body: JSON.stringify({ farmData, planData, language, farmImageBase64 }),
   });
 

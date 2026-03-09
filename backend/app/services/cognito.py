@@ -284,6 +284,10 @@ def login(phone: str, password: str) -> dict:
 def refresh_tokens(refresh_token: str, phone: str) -> dict:
     """
     Use the refresh token to get a new id_token + access_token silently.
+    
+    NOTE: The returned ExpiresIn is the id_token TTL (default: 3600 = 1 hour).
+    This is configured in AWS Cognito Console under "Token expiration".
+    To extend token lifetime to 30 days, update the id_token TTL setting in Cognito.
     """
     phone = _normalize_phone(phone)
     client = _cognito_client()

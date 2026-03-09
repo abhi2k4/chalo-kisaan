@@ -56,6 +56,9 @@ export function AuthProvider({ children }) {
 
   const login = useCallback((tokens) => {
     // tokens = { id_token, access_token, refresh_token, expires_in, phone }
+    // NOTE: expires_in (id_token TTL) is configured in AWS Cognito Console
+    // Default: 1 hour (3600s). Should be set to 30 days (2592000s) for long sessions.
+    // See AUTH_TOKEN_FIX.md for details.
     const expiresAt = Date.now() + tokens.expires_in * 1000;
     setAuth({ ...tokens, expiresAt, profile: null }); // profile fetched after login
   }, []);
@@ -71,6 +74,8 @@ export function AuthProvider({ children }) {
     try {
       const res = await authApi.refresh(currentAuth.phone, currentAuth.refresh_token);
       if (res.success) {
+        // NOTE: res.expires_in is id_token TTL (configured in Cognito)
+        // Currently refreshes every 1 hour; should be 30 days after Cognito config fix
         const expiresAt = Date.now() + res.expires_in * 1000;
         setAuth(prev => ({
           ...prev,

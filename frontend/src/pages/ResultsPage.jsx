@@ -6,7 +6,7 @@ import {
   IconCalendar, IconAlertTriangle, IconClock, IconBuildingWarehouse,
   IconTrendingUp, IconTrophy, IconSunrise, IconRefresh, IconWind,
   IconBrush, IconPrinter, IconBuilding, IconLoader2,
-  IconShare, IconCheck,
+  IconCheck,
 } from "@tabler/icons-react";
 import Narrator from "../components/Narrator";
 import { useNarrator } from "../hooks/useNarrator";
@@ -134,20 +134,21 @@ const TABS = [
   { key:"schemes",       label:"Schemes",    Icon: IconBuildingBank },
 ];
 
-export default function ResultsPage({ sessionReport, language = "hindi", onBack, onReset }) {
-  const { reportId } = useParams();
+export default function ResultsPage({ reportId: propReportId, planData: initPlanData, farmData: initFarmData, farmImage: initFarmImage, sessionReport, language = "hindi", onBack, onReset }) {
+  const { reportId: paramReportId } = useParams();
+  const reportId = propReportId || paramReportId;
 
-  const [planData, setPlanData] = useState(sessionReport?.planData || null);
-  const [farmData, setFarmData] = useState(sessionReport?.farmData || null);
-  const [farmImage, setFarmImage] = useState(sessionReport?.farmImageUrl || null);
+  const [planData, setPlanData] = useState(initPlanData || sessionReport?.planData || null);
+  const [farmData, setFarmData] = useState(initFarmData || sessionReport?.farmData || null);
+  const [farmImage, setFarmImage] = useState(initFarmImage || sessionReport?.farmImageUrl || null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
 
   const [tab, setTab] = useState("overview");
   const [viz, setViz] = useState(null);
+  const [vizLoading, setVizLoading] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
-  const [shareCopied, setShareCopied] = useState(false);
-  const shareTimerRef = useRef(null);
+
 
   // AI Land Visualization state
   const [selectedServices, setSelectedServices] = useState([]);
@@ -244,18 +245,7 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
     setAiImageLoading(false);
   }, [farmImage, selectedServices, farmData, vizMode, planData, reportId]);
 
-  useEffect(() => () => clearTimeout(shareTimerRef.current), []);
-
-  const handleShare = useCallback(() => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-      clearTimeout(shareTimerRef.current);
-      setShareCopied(true);
-      shareTimerRef.current = setTimeout(() => setShareCopied(false), 2000);
-    }).catch(() => {
-      window.prompt("Copy this link:", url);
-    });
-  }, []);
+  useEffect(() => () => clearTimeout(null), []);
 
   // Build service options from plan data
   const serviceOptions = React.useMemo(() => {
@@ -578,6 +568,13 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
             )}
 
             {/* Text description cards */}
+            {vizLoading && !viz && (
+              <div className="rc">
+                <div className="rc__body" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ink-faint)', fontSize: 13 }}>
+                  <IconLoader2 size={15} stroke={2} className="spin" /> Generating visualization description…
+                </div>
+              </div>
+            )}
             {viz && (
               <>
                 <div className="rc">
@@ -633,15 +630,16 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
         <button className="btn-secondary" onClick={onBack}>
           <IconRefresh size={15} stroke={2} /> New Plan
         </button>
-        <button className="btn-secondary" onClick={handleShare}>
-          {shareCopied
-            ? <><IconCheck size={15} stroke={2} /> Link Copied!</>
-            : <><IconShare size={15} stroke={2} /> Share Link</>}
-        </button>
         <button className="btn-primary" disabled={pdfGenerating} onClick={async () => {
           setPdfGenerating(true);
-          try { await exportToPDF(planData, farmData, farmImage); } catch {}
-          setPdfGenerating(false);
+          try {
+            await exportToPDF(planData, farmData, farmImage);
+          } catch (e) {
+            console.error('[ResultsPage] PDF export failed:', e);
+            alert('Failed to generate PDF. Please try again.');
+          } finally {
+            setPdfGenerating(false);
+          }
         }}>
           {pdfGenerating
             ? <><IconLoader2 size={15} stroke={2} className="spin" /> Preparing PDF...</>

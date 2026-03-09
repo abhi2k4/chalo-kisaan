@@ -931,6 +931,37 @@
 
 .myl__action-btn--saved:disabled { opacity: 1; cursor: default; }
 
+/* Report row */
+.myl__report-row {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.myl__action-btn--report {
+  background: linear-gradient(135deg, var(--g-600), var(--g-700));
+  border: none;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(45, 113, 50, 0.35);
+  justify-content: center;
+}
+
+.myl__action-btn--report:hover {
+  background: linear-gradient(135deg, var(--g-700), var(--g-800, #1b5e20));
+  box-shadow: 0 4px 14px rgba(45, 113, 50, 0.45);
+}
+
+.myl__report-creating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
 .spin {
   animation: spin 0.8s linear infinite;
 }
