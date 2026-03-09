@@ -1,0 +1,293 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PhoneMockup.css — Desktop-only phone frame for demo purposes
+   Shows the PWA app inside a CSS phone mockup on desktop.
+   Completely invisible/transparent on mobile (≤ 767px).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Transition animation for mockup entrance */
+@keyframes pm-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) perspective(1200px) rotateX(15deg);
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) perspective(1200px) rotateX(0deg);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   MOBILE — every wrapper is display:contents so nothing changes on phones
+   ──────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .phone-mockup-container,
+  .phone-mockup,
+  .phone-mockup__screen,
+  .phone-mockup__body,
+  .phone-mockup__scroll { display: contents; }
+
+  .phone-mockup-bg,
+  .phone-mockup__status-bar,
+  .phone-mockup__dynamic-island,
+  .phone-mockup__home-indicator { display: none !important; }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   DESKTOP — full phone mockup experience
+   ──────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+
+  /* ── Outer full-screen stage ── */
+  .phone-mockup-container {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 0;
+    animation: pm-enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  /* ── Dark background ── */
+  .phone-mockup-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0f1a2e 0%, #152238 40%, #1a2d4a 70%, #0f1a2e 100%);
+    z-index: 0;
+  }
+  .phone-mockup-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(58,140,58,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(58,140,58,0.05) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  /* ── Branding badge ── */
+  .phone-mockup-branding {
+    position: absolute;
+    bottom: 28px;
+    left: 36px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 18px 9px 12px;
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.10);
+    z-index: 10;
+  }
+  .phone-mockup-branding__dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px rgba(74,222,128,0.6);
+    animation: pm-pulse 2s ease-in-out infinite;
+  }
+  @keyframes pm-pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:.7; transform:scale(1.1); }
+  }
+  .phone-mockup-branding__text {
+    font-size: 14px; font-weight: 700; color: #fff;
+    font-family: var(--font-body,'Inter',sans-serif);
+    letter-spacing: -0.01em;
+  }
+  .phone-mockup-branding__divider { color: rgba(255,255,255,0.3); font-size: 10px; }
+  .phone-mockup-branding__demo {
+    font-size: 12px; font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    font-family: var(--font-body,'Inter',sans-serif);
+  }
+
+  /* ── Phone frame ── */
+  .phone-mockup {
+    position: relative;
+    z-index: 1;
+    width: 375px;
+    height: 812px;
+    background: #111;
+    border-radius: 54px;
+    /* 12px padding so the screen sits inside the bezel */
+    padding: 12px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.10),
+      0 0 0 1px rgba(0,0,0,0.35),
+      0 24px 64px rgba(0,0,0,0.50),
+      0 48px 120px rgba(0,0,0,0.30);
+  }
+  /* Left side buttons */
+  .phone-mockup::before {
+    content: '';
+    position: absolute;
+    left: -4px; top: 116px;
+    width: 3px; height: 30px;
+    background: #333;
+    border-radius: 2px 0 0 2px;
+    box-shadow: 0 42px 0 0 #333, 0 84px 0 0 #333;
+  }
+  /* Right power button */
+  .phone-mockup::after {
+    content: '';
+    position: absolute;
+    right: -4px; top: 176px;
+    width: 3px; height: 60px;
+    background: #333;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ── Screen — flex column, clips everything, IS the positioning context ── */
+  /* transform: translateZ(0) makes position:fixed children relative to THIS element,
+     not the viewport — so the BottomNav's native position:fixed will pin to the screen */
+  .phone-mockup__screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 44px;
+    background: var(--bg, #F5F7F5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: translateZ(0);   /* ← creates containing block for fixed children */
+    will-change: transform;
+  }
+
+  /* ── Status Bar — fixed at top, takes 54px ── */
+  .phone-mockup__status-bar {
+    flex: 0 0 54px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: var(--bg, #F5F7F5);
+    z-index: 50;
+  }
+
+  /* Time — left */
+  .phone-mockup__status-time {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink, #0D1A0D);
+    font-family: var(--font-body,'Inter',sans-serif);
+    letter-spacing: -0.01em;
+    line-height: 1;
+    min-width: 40px;
+  }
+
+  /* Dynamic island pill — centre */
+  .phone-mockup__dynamic-island {
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 34px;
+    background: #000;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .phone-mockup__speaker {
+    width: 52px; height: 5px;
+    background: #1a1a1a;
+    border-radius: 4px;
+  }
+  .phone-mockup__camera {
+    width: 11px; height: 11px;
+    background: radial-gradient(circle at 30% 30%, #253545, #060e18);
+    border-radius: 50%;
+    box-shadow: inset 0 0 2px rgba(255,255,255,0.15), 0 0 0 2px #111;
+  }
+
+  /* Status icons — right */
+  .phone-mockup__status-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink, #0D1A0D);
+  }
+  .phone-mockup__status-icons svg { display: block; flex-shrink: 0; }
+
+  /* ── Body — flex:1 filler below status bar ── */
+  .phone-mockup__body {
+    flex: 1;
+    min-height: 0;          /* critical: lets flex child shrink below content size */
+    position: relative;     /* NOT needed for nav; screen handles that */
+    overflow: hidden;
+  }
+
+  /* ── Scroll area — full height of body, scrollable ── */
+  .phone-mockup__scroll {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .phone-mockup__scroll::-webkit-scrollbar { display: none; }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     App overrides — force mobile-style layout inside the mockup
+     ══════════════════════════════════════════════════════════════════════════ */
+
+  /* App root */
+  .phone-mockup__scroll .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  /* Hide desktop TopNav */
+  .phone-mockup__scroll .top-nav {
+    display: none !important;
+  }
+
+  /* ── BottomNav: pinned to BOTTOM OF SCREEN (not scroll area) ── */
+  /* The screen has transform:translateZ(0), which makes position:fixed children
+     position relative to the screen element instead of the viewport.
+     So the nav's own position:fixed naturally locks to the bottom of the phone screen. */
+  .phone-mockup__screen .bottom-nav {
+    display: flex !important;
+    position: fixed !important;   /* scoped to screen via transform */
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 300;
+    border-radius: 0 0 44px 44px;
+    margin: 0 !important;
+  }
+
+  /* Scroll area gets bottom padding so content never hides behind the nav */
+  .phone-mockup__scroll .app--with-nav {
+    padding-bottom: var(--nav-h, 68px);
+  }
+  /* Also cover plain pages that don't use app--with-nav */
+  .phone-mockup__scroll > *:last-child {
+    padding-bottom: var(--nav-h, 68px);
+  }
+  /* Explicitly ensure HomePage scroll area has bottom padding */
+  .phone-mockup__scroll .home__scroll {
+    padding-bottom: calc(var(--nav-h, 68px) + 16px) !important;
+  }
+}
+
+/* ── Larger desktop ── */
+@media (min-width: 1200px) {
+  .phone-mockup { width: 390px; height: 844px; }
+}
+@media (min-width: 1400px) and (min-height: 900px) {
+  .phone-mockup { width: 410px; height: 880px; }
+}

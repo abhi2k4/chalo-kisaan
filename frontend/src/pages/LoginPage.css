@@ -1,4 +1,24 @@
-/* ── Login Page ─────────────────────────────────────────────────────────── */
+/* ── Login Page ─────────────────────────────────────────────────────── */
+
+.login {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f3f0 0%, #e8f5e2 50%, #f0f8f4 100%);
+  padding: var(--sp-5) var(--page-px, 16px) var(--sp-5);
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* ── Inside phone mockup: center vertically with proper spacing ── */
+@media (min-width: 768px) {
+  .phone-mockup__content .login {
+    min-height: 100%;
+    padding: var(--sp-6) var(--page-px, 16px);
+    padding-bottom: calc(var(--nav-h, 64px) + var(--sp-6));
+  }
+}Page ─────────────────────────────────────────────────────────── */
 
 .login {
   min-height: 100dvh;
@@ -41,7 +61,7 @@
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-  padding: 24px;
+  padding: 32px;
   width: 100%;
   max-width: 400px;
   animation: loginSlideUp 0.4s var(--ease-out);
@@ -110,7 +130,11 @@
 }
 
 /* Phone input */
-.login__field { display: flex; flex-direction: column; gap: 10px; }
+.login__field { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px;
+}
 
 .login__phone-row {
   display: flex;
@@ -137,7 +161,7 @@
   color: var(--ink-dark, #1a1a1a);
   background: var(--paper-fold, #f5f5f0);
   border-right: 2px solid var(--border, #ddd);
-  height: 52px;
+  height: 56px;
   white-space: nowrap;
   user-select: none;
 }
@@ -148,11 +172,11 @@
   flex: 1;
   border: none;
   outline: none;
-  padding: 0 var(--sp-4);
-  font-size: 18px;
+  padding: 0 var(--sp-5);
+  font-size: 16px;
   font-family: var(--font-body, sans-serif);
-  letter-spacing: 1.5px;
-  height: 52px;
+  letter-spacing: 1px;
+  height: 56px;
   background: transparent;
   color: var(--ink-dark, #1a1a1a);
 }
@@ -209,8 +233,8 @@
   overflow: hidden;
   transition: border-color var(--dur-fast) var(--ease-out),
               box-shadow var(--dur-fast) var(--ease-out);
-  height: 52px;
-  padding: 0 6px 0 var(--sp-4);
+  height: 56px;
+  padding: 0 var(--sp-3) 0 var(--sp-4);
 }
 
 .login__pwd-row:focus-within {
@@ -221,7 +245,7 @@
 .login__pwd-icon {
   color: var(--ink-muted, #888);
   flex-shrink: 0;
-  margin-right: var(--sp-2);
+  margin-right: var(--sp-3);
 }
 
 .login__pwd-input {
@@ -233,6 +257,7 @@
   background: transparent;
   color: var(--ink-dark, #1a1a1a);
   height: 100%;
+  padding: 0 var(--sp-3) 0 0;
 }
 
 .login__pwd-toggle {

@@ -13,6 +13,7 @@ import BottomNav from './components/BottomNav';
 import TopNav from './components/TopNav';
 import InstallBanner from './components/InstallBanner';
 import PrimaryPlanBanner from './components/PrimaryPlanBanner';
+import PhoneMockup from './components/PhoneMockup';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { PrimaryPlanProvider } from './context/PrimaryPlanContext';
@@ -37,6 +38,10 @@ function AppInner() {
   // Track profile loading state to avoid flashing onboarding before profile is fetched
   const [profileLoaded, setProfileLoaded] = useState(false);
 
+  // Track mockup & login gate state
+  const [showLoginGate, setShowLoginGate] = useState(false);
+  const [showMockup, setShowMockup] = useState(false);
+
   // Mark profile as loaded once it's available (or after a reasonable timeout)
   useEffect(() => {
     if (isGuest) {
@@ -52,7 +57,6 @@ function AppInner() {
 
   const [page, setPage] = useState('home');
   const [slideDir, setSlideDir] = useState('none'); // 'left' | 'right' | 'none'
-  const [showLoginGate, setShowLoginGate] = useState(false);
   // Track whether onboarding has been dismissed this session
   const [onboardingDone, setOnboardingDone] = useLocalStorage('ck_onboarding_done', false);
 
@@ -98,10 +102,27 @@ function AppInner() {
 
   // Unauthenticated flow
   if (!isLoggedIn) {
+    // If they've clicked "Start Here" on landing, show login inside mockup
     if (showLoginGate) {
-      return <LoginPage onBack={() => setShowLoginGate(false)} />;
+      return (
+        <PhoneMockup>
+          <LoginPage onBack={() => {
+            setShowLoginGate(false);
+            setShowMockup(false); // Go back to landing
+          }} />
+        </PhoneMockup>
+      );
     }
-    return <LandingPage onStart={() => setShowLoginGate(true)} language={language} />;
+    // Default: show full-screen landing page (no mockup)
+    return (
+      <LandingPage 
+        onStart={() => {
+          setShowLoginGate(true);
+          setShowMockup(true); // Enable mockup for login/app flow
+        }} 
+        language={language} 
+      />
+    );
   }
 
   // Show loading screen while profile is being fetched
@@ -141,7 +162,8 @@ function AppInner() {
     }
   };
 
-  return (
+  // ── Authenticated app — wrapped in phone mockup on desktop ── 
+  const appContent = (
     <div className={`app${showNav ? ' app--with-nav' : ''}`}>
 
       {/* ── Desktop TopNav (hidden on mobile via CSS) ── */}
@@ -245,6 +267,13 @@ function AppInner() {
 
       <InstallBanner />
     </div>
+  );
+
+  // Return app wrapped in mockup on desktop
+  return (
+    <PhoneMockup>
+      {appContent}
+    </PhoneMockup>
   );
 }
 
