@@ -5,7 +5,7 @@ import {
   IconEye, IconBuildingBank, IconTarget, IconSparkles, IconUsers,
   IconCalendar, IconAlertTriangle, IconClock, IconBuildingWarehouse,
   IconTrendingUp, IconTrophy, IconSunrise, IconRefresh, IconWind,
-  IconBrush, IconClipboard, IconPrinter, IconBuilding, IconLoader2,
+  IconBrush, IconPrinter, IconBuilding, IconLoader2,
   IconShare, IconCheck,
 } from "@tabler/icons-react";
 import Narrator from "../components/Narrator";
@@ -145,7 +145,6 @@ export default function ResultsPage({ sessionReport, language = "hindi", onBack,
 
   const [tab, setTab] = useState("overview");
   const [viz, setViz] = useState(null);
-  const [vizLoading, setVizLoading] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const shareTimerRef = useRef(null);

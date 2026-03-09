@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -8,7 +7,6 @@ import OnboardingPage from './pages/OnboardingPage';
 import VoiceAssistantPage from './pages/VoiceAssistantPage';
 import MyLandPage from './pages/MyLandPage';
 import SavedPlansPage from './pages/SavedPlansPage';
-import ResultsPage from './pages/ResultsPage';
 import BottomNav from './components/BottomNav';
 import TopNav from './components/TopNav';
 import InstallBanner from './components/InstallBanner';
@@ -29,13 +27,9 @@ function AppInner() {
   // ⚠️ ALL HOOKS MUST BE CALLED AT THE TOP, BEFORE ANY CONDITIONAL LOGIC
   const { isLoggedIn, profile, isGuest } = useAuth();
   const { language, setLanguage } = useLanguage();
-  const navigate = useNavigate();
   const [planData,  setPlanData]  = useLocalStorage('ck_planData', null);
   const [farmData,  setFarmData]  = useLocalStorage('ck_farmData', null);
   const [farmImage, setFarmImage] = useLocalStorage('ck_farmImage', null);
-  
-  // In-memory state for same-session reports (planner → results page)
-  const [sessionReport, setSessionReport] = useState(null);
 
   const [page, setPage] = useState('home');
   const [slideDir, setSlideDir] = useState('none'); // 'left' | 'right' | 'none'
